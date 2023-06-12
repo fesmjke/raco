@@ -1,5 +1,5 @@
 use crate::city::City;
 
 pub trait Solution {
-    fn solve(cities : &Vec<City>) -> Vec<Vec<City>>;
+    fn solve(&self,cities : &Vec<City>) -> Vec<Vec<City>>;
 }
