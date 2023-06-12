@@ -47,3 +47,38 @@ impl Solution for BruteForce {
         return routes;
     }
 }
+
+#[cfg(test)]
+mod solutions {
+    use super::*;
+
+    #[test]
+    fn brute_force() {
+        
+        let city_a = City::new(0.0, 0.0);
+        let city_b = City::new(10.0, 0.0);
+        let city_c = City::new(5.0, 5.0);
+        let city_d = City::new(15.0, 8.0);
+        let city_e = City::new(8.0, 31.0);
+
+        let mut cities = vec![city_a, city_b, city_c];
+
+        let brute_force = BruteForce::new();
+
+        let mut answer = brute_force.solve(&cities);
+
+        assert_eq!(2, answer.len());
+
+        cities.push(city_d);
+
+        answer = brute_force.solve(&cities);
+
+        assert_eq!(6, answer.len());
+
+        cities.push(city_e);
+
+        answer = brute_force.solve(&cities);
+
+        assert_eq!(24, answer.len());
+    }
+}
