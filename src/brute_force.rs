@@ -11,7 +11,40 @@ impl BruteForce {
     }
 
     fn permutations(&self, cities: &Vec<City>) -> Vec<Vec<City>> {
-        todo!()
+        let mut permutations : Vec<Vec<City>> = vec![];
+
+        let mut stack : Vec<usize> = vec![];
+        let mut root_route = cities[1..].to_vec();
+        let n = root_route.len();
+
+        for _ in 0..n {
+            stack.push(0);
+        }
+
+        permutations.push(root_route.clone());
+
+        let mut i: usize = 0;
+
+        while i < n {
+            if stack[i] < i {
+                if i % 2 == 0 {
+                    root_route.swap(0, i);
+                } else {
+                    root_route.swap(stack[i], i);
+                }
+
+                permutations.push(root_route.clone());
+
+                stack[i] += 1;
+
+                i = 0;
+            } else {
+                stack[i] = 0;
+                i += 1;
+            }
+        }
+
+        return permutations;
     }
 }
 
