@@ -1,7 +1,7 @@
 use crate::solution::Solution;
 use crate::city::City;
 
-struct BruteForce;
+pub struct BruteForce;
 
 impl BruteForce {
     pub fn new() -> Self {
