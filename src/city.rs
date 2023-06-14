@@ -1,6 +1,7 @@
 use raylib::prelude::{RaylibDraw,Color,Vector2};
 use crate::drawable::Drawable;
 
+#[derive(Clone)]
 pub struct City {
     position : Vector2,
     size: f32, 
