@@ -1,13 +1,17 @@
-use city::City;
-use path::Path;
-use drawable::Drawable;
 use raylib::prelude::*;
 use rand::Rng;
+
+use algorithms::brute_force;
+
+use city::City;
+use path::Path;
+
 use solution::Solution;
+use drawable::Drawable;
 
 pub mod city;
-pub mod brute_force;
 pub mod solution;
+pub mod algorithms;
 pub mod drawable;
 pub mod path;
 
