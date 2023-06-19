@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 use rand::Rng;
 
-use algorithms::brute_force;
+use algorithms::{brute_force, nearest_neighbour};
 
 use city::City;
 use path::Path;
@@ -14,6 +14,11 @@ pub mod solution;
 pub mod algorithms;
 pub mod drawable;
 pub mod path;
+
+enum States {
+    Brute,
+    NN,
+}
 
 fn main() {
     let width = 1280;
@@ -29,17 +34,22 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    for _ in 0..5 {
+    let n = 30;
+
+    for _ in 0..n {
         let x = rng.gen_range(0..width);
         let y = rng.gen_range(0..height);
 
         cities.push(City::new(x as f32, y as f32))
     }
 
+    let mut state = States::NN;
+
+    let nn = nearest_neighbour::NearestNeighbour::new();
     let brute = brute_force::BruteForce::new();
 
     // Its looks horrible 
-    let routes = brute.solve(&cities);
+    let mut routes = nn.solve(&cities);
 
     let mut route_index = 1;
 
@@ -50,6 +60,28 @@ fn main() {
     let mut choosed = false;
 
     while !rl.window_should_close() {
+        if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_R) {
+
+            match state {
+                States::Brute => {
+                    state = States::NN;
+                    routes = nn.solve(&cities);
+                },
+                States::NN => {
+                    state = States::Brute;
+                    routes = brute.solve(&cities);
+                },
+            }
+
+            route_index = 1;
+
+            path = Path::new(routes[0].clone(), cities[0].clone());
+
+            distances = vec![];
+            best_route = 0;
+            choosed = false;
+        }
+        
         let mut d = rl.begin_drawing(&thread);
 
         d.draw_line(0, height / 2, width, height / 2, Color::BLACK);
