@@ -71,4 +71,50 @@ mod solutions {
     fn christofides() {
 
     }
+
+    #[test]
+    fn simple_prims() {
+        let city_a = City::new(0.0, 0.0);
+        let city_b = City::new(10.0, 0.0);
+        let city_c = City::new(5.0, 5.0);
+        let city_d = City::new(15.0, 8.0);
+        let city_e = City::new(8.0, 31.0);
+
+        let mut cities = vec![city_a, city_b, city_c];
+
+        let mut answer = prims(&cities, 0);
+
+        assert_eq!(vec![(0,2), (2,1)], answer);
+
+        cities.push(city_d);
+
+        answer = prims(&cities, 0);
+
+        assert_eq!(vec![(0,2), (2,1), (1,3)], answer);
+
+        answer = prims(&cities, 3);
+
+        assert_eq!(vec![(3,1), (1,2), (2,0)], answer);
+
+        cities.push(city_e);
+
+        answer = prims(&cities, 0);
+
+        assert_eq!(vec![(0,2), (2,1), (1,3), (3,4)],answer);
+    }
+
+    #[test]
+    fn moderate_prims() {
+        let city_a = City::new(5.0, 5.0);
+        let city_b = City::new(4.0, 6.0);
+        let city_c = City::new(6.0, 6.0);
+        let city_d = City::new(4.0, 6.0);
+        let city_e = City::new(6.0, 4.0);
+
+        let cities = vec![city_a, city_b, city_c, city_d, city_e];
+
+        let answer = prims(&cities, 0);
+
+        assert_eq!(vec![(0,1), (0,2), (0,3), (0,4)], answer);
+    }
 }
