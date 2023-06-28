@@ -14,6 +14,7 @@ pub mod solution;
 pub mod algorithms;
 pub mod drawable;
 pub mod path;
+pub mod utils;
 
 enum States {
     Brute,
