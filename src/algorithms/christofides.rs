@@ -1,6 +1,7 @@
 use crate::solution::Solution;
 use crate::city::City;
 use crate::utils::adjacency_matrix;
+use std::collections::HashMap;
 
 pub struct Christofides;
 
@@ -47,6 +48,25 @@ fn prims(cities: &Vec<City>, root: usize) -> Vec<Pair> {
     }
     
     edges
+}
+
+fn degree(edges: &Vec<Pair>) -> HashMap<usize, usize> {
+    let mut degree = HashMap::new();
+
+    for pair in edges.iter() {
+        match degree.get(&pair.0) {
+            Some(n) => {degree.insert(pair.0, n + 1);},
+            None => {degree.insert(pair.0, 1);},
+        }
+        
+        match degree.get(&pair.1) {
+            Some(n) => {degree.insert(pair.1, n + 1);},
+            None => {degree.insert(pair.1, 1);},
+        }
+
+    }
+
+    degree
 }
 
 impl Christofides {    
