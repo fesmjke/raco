@@ -137,4 +137,21 @@ mod solutions {
 
         assert_eq!(vec![(0,1), (0,2), (0,3), (0,4)], answer);
     }
+
+    #[test]
+    fn simple_degree() {
+        let edges : Vec<Pair> = vec![(0,2), (2,1)];
+
+        let mut answer = degree(&edges);
+
+        assert_eq!(HashMap::from([(0,1),(1,1),(2,2)]), answer);
+
+        for (k, v) in answer.clone().iter() {
+            if v % 2 == 0 {
+                answer.remove(k);
+            }
+        }
+
+        assert_eq!(HashMap::from([(0,1),(1,1)]), answer);
+    }
 }
