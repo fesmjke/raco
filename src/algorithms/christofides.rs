@@ -122,6 +122,15 @@ fn minimum_weight_matching(odd: &Vec<City>) -> Vec<Pair> {
     pairs
 }
 
+fn unite(mspt: &Vec<Pair>,matching: &Vec<Pair>) -> Vec<Pair> {
+    let mut temp = vec![];
+
+    temp.extend(mspt);
+    temp.extend(matching);
+
+    temp
+}
+
 impl Christofides {    
     pub fn new() -> Self {
         Self {
