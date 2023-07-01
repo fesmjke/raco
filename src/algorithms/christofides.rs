@@ -224,4 +224,29 @@ mod solutions {
 
         assert_eq!(HashMap::from([(1,1),(2,1),(3,1),(4,1)]), answer);
     }
+
+    #[test]
+    fn simple_mwm() {
+        let city_a = City::new(0.0, 0.0);
+        let city_b = City::new(10.0, 0.0);
+        let city_c = City::new(5.0, 5.0);
+
+        let cities = vec![city_a, city_b, city_c];
+
+        let edges : Vec<Pair> = vec![(0,2), (2,1)];
+
+        let mut degree = degree(&edges);
+
+        for (k, v) in degree.clone().iter() {
+            if v % 2 == 0 {
+                degree.remove(k);
+            }
+        }
+
+        let odd_cities = convert(&degree, &cities);
+
+        let pairs = minimum_weight_matching(&odd_cities);
+
+        assert_eq!(vec![(0,1)],pairs);
+    }
 }
