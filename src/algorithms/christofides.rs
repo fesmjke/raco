@@ -141,6 +141,27 @@ fn update_mwm_indexes(mwm: &mut Vec<Pair>, odd_degree: &HashMap<usize, usize>) {
     }
 }
 
+fn euler_tour(united: &Vec<Pair>, cities: &Vec<City>) -> Vec<City> {
+    let mut tour : Vec<City> = vec![];
+    let mut visited : Vec<usize> = vec![];
+    
+    for pair in united.iter() {
+
+        if !visited.contains(&pair.0) {
+            tour.push(cities[pair.0].clone());
+            visited.push(pair.0);
+        }
+
+        if !visited.contains(&pair.1) {
+            tour.push(cities[pair.1].clone());
+            visited.push(pair.1);
+        } 
+
+    }
+
+    tour
+}
+
 impl Christofides {    
     pub fn new() -> Self {
         Self {
@@ -322,5 +343,22 @@ mod solutions {
         let united = unite(&mspt, &mwm);
 
         assert_eq!(vec![(0,1), (0,2), (0,3), (0,4), (2,1), (4,3)], united);
+    }
+
+    #[test]
+    fn euler_tour_moderate() {
+        let city_a = City::new(5.0, 5.0);
+        let city_b = City::new(4.0, 6.0);
+        let city_c = City::new(6.0, 6.0);
+        let city_d = City::new(4.0, 4.0);
+        let city_e = City::new(6.0, 4.0);
+
+        let cities = vec![city_a, city_b, city_c, city_d, city_e];
+
+        let united = vec![(0,1), (0,2), (0,3), (0,4), (2,1), (4,3)];
+
+        let route = euler_tour(&united, &cities);
+
+        assert_eq!(5, route.len());
     }
 }
