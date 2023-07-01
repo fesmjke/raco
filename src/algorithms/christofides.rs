@@ -258,4 +258,14 @@ mod solutions {
 
         assert_eq!(vec![(0,1)],pairs);
     }
+
+    #[test]
+    fn simple_unite() {
+        let mspt = vec![(0,2), (2,1)];
+        let mwm = vec![(0,1)];
+
+        let united = unite(&mspt, &mwm);
+
+        assert_eq!(vec![(0,2), (2,1), (0,1)], united);
+    }
 }
