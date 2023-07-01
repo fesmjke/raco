@@ -260,6 +260,41 @@ mod solutions {
     }
 
     #[test]
+    fn moderate_mwm() {
+        let city_a = City::new(5.0, 5.0);
+        let city_b = City::new(4.0, 6.0);
+        let city_c = City::new(6.0, 6.0);
+        let city_d = City::new(4.0, 4.0);
+        let city_e = City::new(6.0, 4.0);
+
+        let cities = vec![city_a, city_b, city_c, city_d, city_e];
+
+        let edges = prims(&cities, 0);
+
+        assert_eq!(vec![(0,1), (0,2), (0,3), (0,4)], edges);
+
+        let mut degree = degree(&edges);
+
+        for (k, v) in degree.clone().iter() {
+            if v % 2 == 0 {
+                degree.remove(k);
+            }
+        }
+
+        assert_eq!(HashMap::from([(1,1),(2,1),(3,1),(4,1)]), degree);
+
+        let odd_cities = convert(&degree, &cities);
+
+        for city in odd_cities.iter() {
+            println!("{:?}", city.position());
+        }
+
+        let pairs = minimum_weight_matching(&odd_cities);
+
+        assert_eq!(vec![(1,0), (3,2)],pairs);
+    }
+
+    #[test]
     fn simple_unite() {
         let mspt = vec![(0,2), (2,1)];
         let mwm = vec![(1,0)];
@@ -267,5 +302,15 @@ mod solutions {
         let united = unite(&mspt, &mwm);
 
         assert_eq!(vec![(0,2), (2,1), (1,0)], united);
+    }
+
+    #[test]
+    fn moderate_unite() {
+        let mspt = vec![(0,1), (0,2), (0,3), (0,4)];
+        let mwm = vec![(1,0), (3,2)];
+
+        let united = unite(&mspt, &mwm);
+
+        assert_eq!(vec![(0,1), (0,2), (0,3), (0,4), (1,0), (3,2)], united);
     }
 }
