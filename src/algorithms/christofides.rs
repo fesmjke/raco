@@ -117,6 +117,7 @@ fn minimum_weight_matching(odd: &Vec<City>) -> Vec<Pair> {
         skip_col.push(temp_col);
 
         pairs.push((temp_col, temp_row));
+        lowest = f32::MAX;
     }
 
     pairs
