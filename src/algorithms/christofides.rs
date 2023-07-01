@@ -154,4 +154,21 @@ mod solutions {
 
         assert_eq!(HashMap::from([(0,1),(1,1)]), answer);
     }
+
+    #[test]
+    fn moderate_degree() {
+        let edges : Vec<Pair> = vec![(0,1), (0,2), (0,3), (0,4)];
+
+        let mut answer = degree(&edges);
+
+        assert_eq!(HashMap::from([(0,4),(1,1),(2,1),(3,1),(4,1)]), answer);
+
+        for (k, v) in answer.clone().iter() {
+            if v % 2 == 0 {
+                answer.remove(k);
+            }
+        }
+
+        assert_eq!(HashMap::from([(1,1),(2,1),(3,1),(4,1)]), answer);
+    }
 }
