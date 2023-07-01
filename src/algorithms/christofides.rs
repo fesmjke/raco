@@ -69,6 +69,59 @@ fn degree(edges: &Vec<Pair>) -> HashMap<usize, usize> {
     degree
 }
 
+fn convert(indexes: &HashMap<usize, usize>, cities: &Vec<City>) -> Vec<City> {
+    let mut temp = vec![];
+
+    for (k,_) in indexes.iter() {
+        temp.push(cities[*k].clone());
+    }
+
+    temp
+}
+
+fn minimum_weight_matching(odd: &Vec<City>) -> Vec<Pair> {
+    let mut pairs = vec![];
+
+    let matrix = adjacency_matrix(odd);
+    
+    let mut lowest = f32::MAX;
+
+    let mut temp_col = 0 as usize;
+    let mut temp_row = 0 as usize;
+
+    let mut skip_row : Vec<usize> = vec![];
+    let mut skip_col : Vec<usize> = vec![];
+
+    for row in 0..matrix.len() {
+
+        if skip_row.contains(&row) {
+            continue;
+        }
+
+         for col in 0..matrix[row].len() {
+            
+            if skip_col.contains(&col) {
+                continue;
+            }
+                
+            if lowest > matrix[row][col] && matrix[row][col] != 0.0 {
+                lowest = matrix[row][col];
+                temp_row = row;
+                temp_col = col;
+            }
+        }
+
+        skip_row.push(temp_row);
+        skip_row.push(temp_col);
+        skip_col.push(temp_row);
+        skip_col.push(temp_col);
+
+        pairs.push((temp_row, temp_col));
+    }
+
+    pairs
+}
+
 impl Christofides {    
     pub fn new() -> Self {
         Self {
