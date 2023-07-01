@@ -116,7 +116,7 @@ fn minimum_weight_matching(odd: &Vec<City>) -> Vec<Pair> {
         skip_col.push(temp_row);
         skip_col.push(temp_col);
 
-        pairs.push((temp_row, temp_col));
+        pairs.push((temp_col, temp_row));
     }
 
     pairs
@@ -256,16 +256,16 @@ mod solutions {
 
         let pairs = minimum_weight_matching(&odd_cities);
 
-        assert_eq!(vec![(0,1)],pairs);
+        assert_eq!(vec![(1,0)],pairs);
     }
 
     #[test]
     fn simple_unite() {
         let mspt = vec![(0,2), (2,1)];
-        let mwm = vec![(0,1)];
+        let mwm = vec![(1,0)];
 
         let united = unite(&mspt, &mwm);
 
-        assert_eq!(vec![(0,2), (2,1), (0,1)], united);
+        assert_eq!(vec![(0,2), (2,1), (1,0)], united);
     }
 }
