@@ -132,6 +132,15 @@ fn unite(mspt: &Vec<Pair>,matching: &Vec<Pair>) -> Vec<Pair> {
     temp
 }
 
+fn update_mwm_indexes(mwm: &mut Vec<Pair>, odd_degree: &HashMap<usize, usize>) {
+    let shift_index = odd_degree.keys().min().unwrap();
+    
+    for pair in mwm.iter_mut() {
+        pair.0 += shift_index;
+        pair.1 += shift_index;
+    }
+}
+
 impl Christofides {    
     pub fn new() -> Self {
         Self {
@@ -255,7 +264,9 @@ mod solutions {
 
         let odd_cities = convert(&degree, &cities);
 
-        let pairs = minimum_weight_matching(&odd_cities);
+        let mut pairs = minimum_weight_matching(&odd_cities);
+
+        update_mwm_indexes(&mut pairs, &degree);
 
         assert_eq!(vec![(1,0)],pairs);
     }
@@ -286,13 +297,11 @@ mod solutions {
 
         let odd_cities = convert(&degree, &cities);
 
-        for city in odd_cities.iter() {
-            println!("{:?}", city.position());
-        }
+        let mut pairs = minimum_weight_matching(&odd_cities);
 
-        let pairs = minimum_weight_matching(&odd_cities);
+        update_mwm_indexes(&mut pairs, &degree);
 
-        assert_eq!(vec![(1,0), (3,2)],pairs);
+        assert_eq!(vec![(2,1), (4,3)],pairs);
     }
 
     #[test]
