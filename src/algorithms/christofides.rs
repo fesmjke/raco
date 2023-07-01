@@ -317,10 +317,10 @@ mod solutions {
     #[test]
     fn moderate_unite() {
         let mspt = vec![(0,1), (0,2), (0,3), (0,4)];
-        let mwm = vec![(1,0), (3,2)];
+        let mwm = vec![(2,1), (4,3)];
 
         let united = unite(&mspt, &mwm);
 
-        assert_eq!(vec![(0,1), (0,2), (0,3), (0,4), (1,0), (3,2)], united);
+        assert_eq!(vec![(0,1), (0,2), (0,3), (0,4), (2,1), (4,3)], united);
     }
 }
