@@ -172,7 +172,33 @@ impl Christofides {
 
 impl Solution for Christofides {
     fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
-        todo!();
+        let mut routes = vec![];
+
+        for (i, _) in cities.iter().enumerate() {
+            let mspt = prims(&cities, i);
+
+            let mut degree = degree(&mspt);
+    
+            for (k, v) in degree.clone().iter() {
+                if v % 2 == 0 {
+                    degree.remove(k);
+                }
+            }
+    
+            let odd_cities = convert(&degree, &cities);
+    
+            let mut mwm = minimum_weight_matching(&odd_cities);
+    
+            update_mwm_indexes(&mut mwm, &degree);
+    
+            let united = unite(&mspt, &mwm);
+    
+            let route = euler_tour(&united, &cities);
+    
+            routes.push(route);
+        }
+
+        routes
     }
 }
 
