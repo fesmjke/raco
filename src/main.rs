@@ -1,11 +1,11 @@
 use raylib::prelude::*;
-use rand::Rng;
 use std::fmt;
 
 use algorithms::{brute_force, nearest_neighbour, christofides};
 
 use city::City;
 use path::Path;
+use preset::Preset;
 
 use solution::Solution;
 use drawable::Drawable;
@@ -16,6 +16,7 @@ pub mod algorithms;
 pub mod drawable;
 pub mod path;
 pub mod utils;
+pub mod preset;
 
 enum States {
     Brute,
@@ -41,20 +42,16 @@ fn main() {
     .title("Rant")
     .build();
 
+    let texture = rl.load_texture(&thread, "./assets/usa_light.png").expect("Could not load texture");
+
+    let mut usa = Preset::new(texture);
+
     rl.set_target_fps(60);
 
-    let mut cities : Vec<City> = vec![];
+    usa.create_cities(preset::DefaultPresets::USA, preset::PresetSize::Medium);
+    let mut cities : &Vec<City> = usa.get_cities();
 
-    let mut rng = rand::thread_rng();
-
-    let n = 10;
-
-    for _ in 0..n {
-        let x = rng.gen_range(0..width);
-        let y = rng.gen_range(0..height);
-
-        cities.push(City::new(x as f32, y as f32))
-    }
+    let n = cities.len();
 
     let mut state = States::Christofides;
 
@@ -73,7 +70,7 @@ fn main() {
     let mut best_route = 0 as usize;
     let mut choosed = false;
 
-    while !rl.window_should_close() {
+    while !rl.window_should_close() {        
         if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_R) {
 
             match state {
@@ -107,8 +104,7 @@ fn main() {
         
         let mut d = rl.begin_drawing(&thread);
 
-        d.draw_line(0, height / 2, width, height / 2, Color::BLACK);
-        d.draw_line(width / 2, height , width / 2, 0, Color::BLACK);
+        d.draw_texture(usa.get_texture(), 0, 0, Color::WHITE);
 
         // This looks horrible too
         match path.draw_mut(&mut d) {
