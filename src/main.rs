@@ -1,7 +1,8 @@
 use raylib::prelude::*;
 use rand::Rng;
+use std::fmt;
 
-use algorithms::{brute_force, nearest_neighbour};
+use algorithms::{brute_force, nearest_neighbour, christofides};
 
 use city::City;
 use path::Path;
@@ -19,6 +20,17 @@ pub mod utils;
 enum States {
     Brute,
     NN,
+    Christofides
+}
+
+impl fmt::Display for States {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            States::Brute => write!(f, "Brute force"),
+            States::NN => write!(f, "NN"),
+            States::Christofides => write!(f, "Christofides"),
+        }
+    }
 }
 
 fn main() {
@@ -35,7 +47,7 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    let n = 30;
+    let n = 10;
 
     for _ in 0..n {
         let x = rng.gen_range(0..width);
@@ -44,13 +56,14 @@ fn main() {
         cities.push(City::new(x as f32, y as f32))
     }
 
-    let mut state = States::NN;
+    let mut state = States::Christofides;
 
+    let christofides = christofides::Christofides::new();
     let nn = nearest_neighbour::NearestNeighbour::new();
     let brute = brute_force::BruteForce::new();
 
     // Its looks horrible 
-    let mut routes = nn.solve(&cities);
+    let mut routes = christofides.solve(&cities);
 
     let mut route_index = 1;
 
@@ -69,8 +82,17 @@ fn main() {
                     routes = nn.solve(&cities);
                 },
                 States::NN => {
-                    state = States::Brute;
-                    routes = brute.solve(&cities);
+                    state = States::Christofides;
+                    routes = christofides.solve(&cities);
+                },
+                States::Christofides => {
+                    if n > 5 {
+                        state = States::NN;
+                        routes = nn.solve(&cities);
+                    } else {
+                        state = States::Brute;
+                        routes = brute.solve(&cities);
+                    }
                 },
             }
 
@@ -122,6 +144,7 @@ fn main() {
         d.draw_text(format!("Total distance : {:.2}", path.total_distance() / 100.0).as_str(), 0, 0, 24, Color::BLACK);
         d.draw_text(format!("Current route index: {}", route_index).as_str(), 0, 24, 24, Color::BLACK);
         d.draw_text(format!("Best route index: {}", best_route).as_str(), 0, 48, 24, Color::BLACK);
+        d.draw_text(format!("Algorithm: {}", state).as_str(), 0, 72, 24, Color::BLACK);
 
         d.clear_background(Color::WHITE);
     }
