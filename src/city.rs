@@ -11,7 +11,7 @@ impl City {
     pub fn new(x : f32, y: f32) -> Self {
         Self {
             position : Vector2 { x, y },
-            size: 10.0
+            size: 5.0
         }
     }
 
