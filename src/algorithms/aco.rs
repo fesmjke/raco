@@ -1,6 +1,6 @@
 use crate::solution::Solution;
 use crate::city::City;
-use crate::utils::{adjacency_matrix, scale_distances};
+use crate::utils::{adjacency_matrix, scale_distances, caclulate_distance};
 
 pub struct Aco {
     ants: usize,
@@ -64,13 +64,17 @@ impl Trail {
 struct Pheromone {
     table: Vec<Vec<f32>>,
     pheromone_strength: f32,
+    Q : f32,
+    evaporation: f32
 }
 
 impl Pheromone {
     fn new() -> Self {
         Self { 
             table: vec![],
-            pheromone_strength: 0.3
+            pheromone_strength: 0.3,
+            Q : 4.0,
+            evaporation: 0.5,
         }
     }
 
@@ -91,8 +95,24 @@ impl Pheromone {
         }
     }
 
-    pub fn update_table(){
-        todo!()
+    pub fn update_table(&mut self, route: &Vec<usize>, length: f32){
+        let delta = self.Q / length;
+        let mut current = route[0];
+
+        let mut initial = true;
+
+        for index in route.iter() {
+            if initial {
+                initial = false;
+                continue;
+            }
+            
+            self.table[current][*index] = ((1.0 - self.evaporation) * self.table[current][*index]) + delta;
+
+            current = *index;
+        }
+
+        self.table[current][route[0]] = ((1.0 - self.evaporation) * self.table[current][route[0]]) + delta;
     }
 }
 
@@ -160,8 +180,6 @@ mod solutions {
         let city_a = City::new(0.0, 0.0);
         let city_b = City::new(10.0, 0.0);
         let city_c = City::new(5.0, 5.0);
-        let city_d = City::new(15.0, 8.0);
-        let city_e = City::new(8.0, 31.0);
 
         let mut cities = vec![city_a, city_b, city_c];
         let size = cities.len();
@@ -185,7 +203,7 @@ mod solutions {
                         vec![0.58578646, 0.0, 0.4142136],
                         vec![0.5, 0.5 , 0.0]], probability.table);
 
-        let visited : Vec<usize> = vec![0];
+        let mut visited : Vec<usize> = vec![0];
 
         trails.reduce_trail(&visited);
 
@@ -194,5 +212,14 @@ mod solutions {
         assert_eq!(vec![vec![0.0, 0.0, 0.0], 
                         vec![0.0, 0.0, 1.0],
                         vec![0.0, 1.0, 0.0]], probability.table);
+
+        visited.push(2);
+        visited.push(1);
+
+        pheromone.update_table(&visited, 24.14);
+
+        assert_eq!(vec![vec![0.0, 0.3, 0.3157001], 
+                        vec![0.3157001, 0.0, 0.3],
+                        vec![0.3, 0.3157001, 0.0]], pheromone.table);
     }
 }
