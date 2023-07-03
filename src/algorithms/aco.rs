@@ -105,7 +105,7 @@ impl Probability {
         Self { table: vec![] }
     }
     
-    fn initialize_probability_table(&mut self, size: usize) {
+    fn initialize_table(&mut self, size: usize) {
         for _ in 0..size {
             let mut row = vec![];
     
@@ -117,7 +117,7 @@ impl Probability {
         }
     }
 
-    fn update_probability_table(&mut self, trail: &Trail) {
+    fn update_table(&mut self, trail: &Trail) {
         for (i,row) in self.table.iter_mut().enumerate() {
             let row_sum: f32 = trail.table[i].iter().map(|&v| v as f32).sum();
     
@@ -175,11 +175,11 @@ mod solutions {
         let mut trails = Trail::new();
         let mut probability = Probability::new();
         
-        probability.initialize_probability_table(size);
+        probability.initialize_table(size);
         pheromone.init_table(size);
         trails.init_table(&pheromone, &distances);
 
-        probability.update_probability_table(&trails);
+        probability.update_table(&trails);
 
         assert_eq!(vec![vec![0.0, 0.58578646, 0.4142136], 
                         vec![0.58578646, 0.0, 0.4142136],
@@ -189,7 +189,7 @@ mod solutions {
 
         trails.reduce_trail(&visited);
 
-        probability.update_probability_table(&trails);
+        probability.update_table(&trails);
 
         assert_eq!(vec![vec![0.0, 0.0, 0.0], 
                         vec![0.0, 0.0, 1.0],
