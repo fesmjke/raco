@@ -1,74 +1,137 @@
 use crate::solution::Solution;
 use crate::city::City;
-use crate::utils::adjacency_matrix;
+use crate::utils::{adjacency_matrix, scale_distances};
 
 pub struct Aco {
     ants: usize,
     iterations: usize,
+}
+
+struct Trail {
+    table: Vec<Vec<f32>>,
     alpha: f32,
     beta: f32,
-    pheromone_default: f32,
 }
 
-fn initialize_pheromone_table(size: usize, pheromone_default: f32) -> Vec<Vec<f32>> {
-    let mut pheromone_table = vec![]; 
+impl Trail {
+    fn new() -> Self {
+        Self {
+            table : vec![],
+            alpha: 1.0, 
+            beta: 1.0 
+        }
+    }
 
-    for i in 0..size {
-        let mut row = vec![];
+    fn init_table(&mut self, pheromone : &Pheromone, distances: &Vec<Vec<f32>>) {
+        self.table = vec![vec![0.0;distances.len()]; distances.len()];
+        
+        for (i, row) in self.table.iter_mut().enumerate() {
+            for (j, value) in row.iter_mut().enumerate() {
+                if i == j {
+                    continue;
+                }
+                
+                *value = pheromone.table[i][j].powf(self.alpha) * distances[i][j].powf(self.beta);
+            }
+        }
+    }
 
-        for j in 0..size {
-            if i == j {
+    fn reduce_trail(&mut self, visited: &Vec<usize>) {
+        let size = self.table.len();
+
+        for (i, row) in self.table.iter_mut().enumerate() {
+            if visited.contains(&i) {
+                *row = vec![0.0; size];
+                continue;
+            }
+    
+            for (j, value) in row.iter_mut().enumerate() {
+                if visited.contains(&j) {
+                    *value = 0.0;
+                    continue;
+                }
+    
+                if i == j {
+                    continue;
+                }
+            }
+        }
+    }
+
+
+}
+
+struct Pheromone {
+    table: Vec<Vec<f32>>,
+    pheromone_strength: f32,
+}
+
+impl Pheromone {
+    fn new() -> Self {
+        Self { 
+            table: vec![],
+            pheromone_strength: 0.3
+        }
+    }
+
+    fn init_table(&mut self, size: usize) {
+        for i in 0..size {
+            let mut row = vec![];
+    
+            for j in 0..size {
+                if i == j {
+                    row.push(0.0);
+                    continue;
+                }
+    
+                row.push(self.pheromone_strength);
+            }
+    
+            self.table.push(row);
+        }
+    }
+
+    pub fn update_table(){
+        todo!()
+    }
+}
+
+struct Probability {
+    table: Vec<Vec<f32>>
+}
+
+impl Probability {
+    fn new() -> Self {
+        Self { table: vec![] }
+    }
+    
+    fn initialize_probability_table(&mut self, size: usize) {
+        for _ in 0..size {
+            let mut row = vec![];
+    
+            for _ in 0..size {
                 row.push(0.0);
-                continue;
             }
-
-            row.push(pheromone_default);
-        }
-
-        pheromone_table.push(row);
-    }
-
-    pheromone_table
-}
-
-fn update_probability_table(probability_table: &mut Vec<Vec<f32>>, trail: &Vec<Vec<f32>>) {
-    for (i,row) in probability_table.iter_mut().enumerate() {
-        let row_sum: f32 = trail[i].iter().map(|&v| v as f32).sum();
-
-        for (j,value) in row.iter_mut().enumerate() {
-            if i == j {
-                continue;
-            }
-
-            *value = trail[i][j] / row_sum;
-        }
-    }
-}
-
-fn calc_trail(pheromone_table: &Vec<Vec<f32>>, distances: &Vec<Vec<f32>>, alpha: f32, beta: f32) -> Vec<Vec<f32>> {
-    let mut trail : Vec<Vec<f32>> = vec![vec![0.0;distances.len()]; distances.len()];
-
-    for (i, row) in trail.iter_mut().enumerate() {
-        for (j, value) in row.iter_mut().enumerate() {
-            if i == j {
-                continue;
-            }
-            
-            *value = pheromone_table[i][j].powf(alpha) * distances[i][j].powf(beta);
+    
+            self.table.push(row);
         }
     }
 
-    trail
-}
-
-fn scale_distances(distances: &mut Vec<Vec<f32>>, slace_factor: f32) {
-    for row in distances.iter_mut() {
-        for value in row.iter_mut() {
-            *value /= slace_factor;
-
-            let temp : f32 = format!("{:.2}", value).parse().unwrap();
-
-            *value = temp;
+    fn update_probability_table(&mut self, trail: &Trail) {
+        for (i,row) in self.table.iter_mut().enumerate() {
+            let row_sum: f32 = trail.table[i].iter().map(|&v| v as f32).sum();
+    
+            for (j,value) in row.iter_mut().enumerate() {
+                if i == j {
+                    continue;
+                }
+    
+                if row_sum == 0.0 {
+                    *value = 0.0;
+                } else {
+                    *value = trail.table[i][j] / row_sum;
+                }
+            }
         }
     }
 }
@@ -78,9 +141,6 @@ impl Aco {
         Self {
             ants,
             iterations,
-            alpha : 1.0,
-            beta : 1.0,
-            pheromone_default: 0.3,
         }
     }
 }
@@ -104,26 +164,35 @@ mod solutions {
         let city_e = City::new(8.0, 31.0);
 
         let mut cities = vec![city_a, city_b, city_c];
+        let size = cities.len();
 
         let solver = Aco::new(cities.len(), 100);
 
-        let mut probability_table : Vec<Vec<f32>> = vec![vec![0.0;cities.len()];cities.len()];
-        let mut pheromone_table = initialize_pheromone_table(cities.len(), 0.3);
         let mut distances = adjacency_matrix(&cities);
-        let mut trails = calc_trail(&pheromone_table, &distances, solver.alpha, solver.beta);
-
         scale_distances(&mut distances, 100.0);
 
-        assert_eq!(vec![vec![0.0, 0.1, 0.07],
-                        vec![0.1, 0.0, 0.07],
-                        vec![0.07, 0.07, 0.0]], distances);
+        let mut pheromone = Pheromone::new();
+        let mut trails = Trail::new();
+        let mut probability = Probability::new();
+        
+        probability.initialize_probability_table(size);
+        pheromone.init_table(size);
+        trails.init_table(&pheromone, &distances);
 
-        update_probability_table(&mut probability_table, &trails);
-            
-        // p = (trail[row][col]) / sum(trail[row])
+        probability.update_probability_table(&trails);
 
-        assert_eq!(vec![vec![0.0, 0.5857864, 0.41421357], 
-                        vec![0.5857864, 0.0, 0.41421357],
-                        vec![0.5, 0.5 , 0.0]], probability_table);
+        assert_eq!(vec![vec![0.0, 0.58578646, 0.4142136], 
+                        vec![0.58578646, 0.0, 0.4142136],
+                        vec![0.5, 0.5 , 0.0]], probability.table);
+
+        let visited : Vec<usize> = vec![0];
+
+        trails.reduce_trail(&visited);
+
+        probability.update_probability_table(&trails);
+
+        assert_eq!(vec![vec![0.0, 0.0, 0.0], 
+                        vec![0.0, 0.0, 1.0],
+                        vec![0.0, 1.0, 0.0]], probability.table);
     }
 }
