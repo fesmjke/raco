@@ -45,7 +45,7 @@ fn update_probability_table(probability_table: &mut Vec<Vec<f32>>, trail: &Vec<V
     }
 }
 
-fn calc_trail(pheromone_table: &Vec<Vec<f32>>, distances: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
+fn calc_trail(pheromone_table: &Vec<Vec<f32>>, distances: &Vec<Vec<f32>>, alpha: f32, beta: f32) -> Vec<Vec<f32>> {
     let mut trail : Vec<Vec<f32>> = vec![vec![0.0;distances.len()]; distances.len()];
 
     for (i, row) in trail.iter_mut().enumerate() {
@@ -54,7 +54,7 @@ fn calc_trail(pheromone_table: &Vec<Vec<f32>>, distances: &Vec<Vec<f32>>) -> Vec
                 continue;
             }
             
-            *value = pheromone_table[i][j] * distances[i][j];
+            *value = pheromone_table[i][j].powf(alpha) * distances[i][j].powf(beta);
         }
     }
 
@@ -110,7 +110,7 @@ mod solutions {
         let mut probability_table : Vec<Vec<f32>> = vec![vec![0.0;cities.len()];cities.len()];
         let mut pheromone_table = initialize_pheromone_table(cities.len(), 0.3);
         let mut distances = adjacency_matrix(&cities);
-        let mut trails = calc_trail(&pheromone_table, &distances);
+        let mut trails = calc_trail(&pheromone_table, &distances, solver.alpha, solver.beta);
 
         scale_distances(&mut distances, 100.0);
 
