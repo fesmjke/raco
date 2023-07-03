@@ -28,3 +28,36 @@ pub fn scale_distances(distances :&mut Vec<Vec<f32>>, slace_factor: f32) {
         }
     }
 }
+
+pub fn caclulate_distance(route :&Vec<City>) -> f32 {
+    let mut length = 0.0;
+    let mut current = route[0].clone();
+
+    for city in route.iter() {
+        length += current.position().distance_to(*city.position());
+
+        current = city.clone();
+    }
+
+    length += current.position().distance_to(*route[0].position());
+
+    length
+}
+
+#[cfg(test)]
+mod utils {
+    use super::*;
+
+    #[test]
+    fn calc_distance() {
+        let city_a = City::new(0.0, 0.0);
+        let city_b = City::new(10.0, 0.0);
+        let city_c = City::new(5.0, 5.0);
+
+        let route = vec![city_a, city_b, city_c];
+
+        let length = caclulate_distance(&route);
+
+        assert_eq!(24.142136 ,length)
+    }
+}
