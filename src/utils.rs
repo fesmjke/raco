@@ -21,3 +21,10 @@ pub fn adjacency_matrix(cities: &Vec<City>) -> Vec<Vec<f32>> {
     matrix
 }
 
+pub fn scale_distances(distances :&mut Vec<Vec<f32>>, slace_factor: f32) {
+    for row in distances.iter_mut() {
+        for value in row.iter_mut() {
+            *value /= slace_factor;
+        }
+    }
+}
