@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 use std::fmt;
 
-use algorithms::{brute_force, nearest_neighbour, christofides};
+use algorithms::{brute_force, nearest_neighbour, christofides, aco};
 
 use city::City;
 use path::Path;
@@ -21,7 +21,8 @@ pub mod preset;
 enum States {
     Brute,
     NN,
-    Christofides
+    Christofides,
+    ACO,
 }
 
 impl fmt::Display for States {
@@ -30,6 +31,7 @@ impl fmt::Display for States {
             States::Brute => write!(f, "Brute force"),
             States::NN => write!(f, "NN"),
             States::Christofides => write!(f, "Christofides"),
+            States::ACO => write!(f, "ACO")
         }
     }
 }
@@ -48,19 +50,20 @@ fn main() {
 
     rl.set_target_fps(60);
 
-    usa.create_cities(preset::DefaultPresets::USA, preset::PresetSize::Medium);
+    usa.create_cities(preset::DefaultPresets::USA, preset::PresetSize::Small);
     let mut cities : &Vec<City> = usa.get_cities();
 
     let n = cities.len();
 
-    let mut state = States::Christofides;
+    let mut state = States::ACO;
 
     let christofides = christofides::Christofides::new();
     let nn = nearest_neighbour::NearestNeighbour::new();
     let brute = brute_force::BruteForce::new();
+    let aco = aco::Aco::new(n, 10);
 
     // Its looks horrible 
-    let mut routes = christofides.solve(&cities);
+    let mut routes = aco.solve(&cities);
 
     let mut route_index = 1;
 
@@ -83,6 +86,10 @@ fn main() {
                     routes = christofides.solve(&cities);
                 },
                 States::Christofides => {
+                    state = States::ACO;
+                    routes = aco.solve(&cities);
+                },
+                States::ACO => {
                     if n > 5 {
                         state = States::NN;
                         routes = nn.solve(&cities);
