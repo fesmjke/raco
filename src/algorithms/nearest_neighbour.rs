@@ -35,10 +35,8 @@ impl Solution for NearestNeighbour {
     fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
         let mut routes : Vec<Vec<City>> = vec![];
 
-        let root_route = cities[1..].to_vec().clone();
-
-        for (index,city) in root_route.iter().enumerate() {
-            let mut temp = root_route.clone();
+        for (index,city) in cities.iter().enumerate() {
+            let mut temp = cities.clone();
             let mut route : Vec<City> = vec![];
             let mut lowest = 0 as usize;
             let mut start = city.clone();
@@ -82,18 +80,18 @@ mod solutions {
 
         let mut answer = nn.solve(&cities);
 
-        assert_eq!(2, answer.len());
+        assert_eq!(3, answer.len());
 
         cities.push(city_d);
 
         answer = nn.solve(&cities);
 
-        assert_eq!(3, answer.len());
+        assert_eq!(4, answer.len());
 
         cities.push(city_e);
 
         answer = nn.solve(&cities);
 
-        assert_eq!(4, answer.len());
+        assert_eq!(5, answer.len());
     }
 }
