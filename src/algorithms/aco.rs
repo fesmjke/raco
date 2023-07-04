@@ -39,8 +39,6 @@ impl Trail {
     }
 
     fn reduce_trail(&mut self, visited: &Vec<usize>) {
-        let size = self.table.len();
-
         for (i, row) in self.table.iter_mut().enumerate() {    
             for (j, value) in row.iter_mut().enumerate() {
                 if visited.contains(&j) {
@@ -226,7 +224,15 @@ impl Solution for Aco {
             }
         }
 
-        routes
+        let mut temp : Vec<Vec<City>> = vec![];
+        
+        for route in routes.iter() {
+            if route.starts_with(&[cities[0].clone()]) {
+                temp.push(route.clone());
+            }
+        } 
+
+        temp
     }
 }
 
@@ -240,10 +246,8 @@ mod solutions {
         let city_b = City::new(10.0, 0.0);
         let city_c = City::new(5.0, 5.0);
 
-        let mut cities = vec![city_a, city_b, city_c];
+        let cities = vec![city_a, city_b, city_c];
         let size = cities.len();
-
-        let solver = Aco::new(cities.len(), 100);
 
         let mut distances = adjacency_matrix(&cities);
         scale_distances(&mut distances, 100.0);
@@ -288,7 +292,7 @@ mod solutions {
         let city_b = City::new(10.0, 0.0);
         let city_c = City::new(5.0, 5.0);
 
-        let mut cities = vec![city_a, city_b, city_c];
+        let cities = vec![city_a, city_b, city_c];
 
         let solver = Aco::new(cities.len(), 100);
 
