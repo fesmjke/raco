@@ -44,6 +44,16 @@ pub fn caclulate_distance(route :&Vec<City>) -> f32 {
     length
 }
 
+pub fn convert(indexes: &Vec<usize>,cities :&Vec<City>) -> Vec<City> {
+    let mut temp = vec![];
+
+    for index in indexes.iter() {
+        temp.push(cities[*index].clone());
+    }
+
+    temp
+}
+
 #[cfg(test)]
 mod utils {
     use super::*;
