@@ -49,11 +49,9 @@ impl Drawable for Path {
 
         self.root.draw(d);
 
-        d.draw_text(format!("0").as_str(), self.root.position().x as i32, self.root.position().y as i32, 20, Color::RED);
-
         for (index,city) in self.route.iter().enumerate() {
             city.draw(d);
-            d.draw_text(format!("{}", index + 1).as_str(), city.position().x as i32, city.position().y as i32, 20, Color::RED);
+            d.draw_text(format!("{}", index).as_str(), city.position().x as i32, city.position().y as i32, 20, Color::RED);
         }
 
         for city in self.route.iter() {
