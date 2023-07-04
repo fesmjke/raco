@@ -20,6 +20,12 @@ impl City {
     }
 }
 
+impl PartialEq for City {
+    fn eq(&self, other: &Self) -> bool {
+        self.position == other.position
+    }
+}
+
 impl Drawable for City {
     fn draw<T: RaylibDraw>(&self, d : &mut T) {
         d.draw_circle_v(self.position, self.size, Color::BLACK);
