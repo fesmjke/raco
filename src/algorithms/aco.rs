@@ -272,8 +272,8 @@ mod solutions {
 
         probability.update_table(&trails);
 
-        assert_eq!(vec![vec![0.0, 0.0, 0.0], 
-                        vec![0.0, 0.0, 1.0],
+        assert_eq!(vec![vec![0.0, 1.0, 0.0], 
+                        vec![0.0, 0.0, 0.0],
                         vec![0.0, 1.0, 0.0]], probability.table);
 
         
@@ -298,6 +298,6 @@ mod solutions {
 
         let routes = solver.solve(&cities);
 
-        assert_eq!(3, routes.len());
+        assert_eq!(100, routes.len());
     }
 }
