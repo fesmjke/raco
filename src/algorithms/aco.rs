@@ -1,6 +1,8 @@
 use crate::solution::Solution;
 use crate::city::City;
-use crate::utils::{adjacency_matrix, scale_distances, caclulate_distance};
+use crate::utils::{adjacency_matrix, scale_distances, caclulate_distance, convert};
+
+use rand::Rng;
 
 pub struct Aco {
     ants: usize,
@@ -39,12 +41,7 @@ impl Trail {
     fn reduce_trail(&mut self, visited: &Vec<usize>) {
         let size = self.table.len();
 
-        for (i, row) in self.table.iter_mut().enumerate() {
-            if visited.contains(&i) {
-                *row = vec![0.0; size];
-                continue;
-            }
-    
+        for (i, row) in self.table.iter_mut().enumerate() {    
             for (j, value) in row.iter_mut().enumerate() {
                 if visited.contains(&j) {
                     *value = 0.0;
@@ -57,8 +54,6 @@ impl Trail {
             }
         }
     }
-
-
 }
 
 struct Pheromone {
@@ -125,7 +120,7 @@ impl Probability {
         Self { table: vec![] }
     }
     
-    fn initialize_table(&mut self, size: usize) {
+    fn init_table(&mut self, size: usize) {
         for _ in 0..size {
             let mut row = vec![];
     
@@ -167,7 +162,71 @@ impl Aco {
 
 impl Solution for Aco {
     fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
-        todo!()
+        let mut routes = vec![];
+
+        let mut rng = rand::thread_rng();
+
+        let mut distances = adjacency_matrix(&cities);
+        scale_distances(&mut distances, 100.0);
+        
+        let size = cities.len();
+        
+        let mut pheromone = Pheromone::new();
+        let mut trails = Trail::new();
+        let mut probability = Probability::new();
+        
+        probability.init_table(size);
+        pheromone.init_table(size);
+        trails.init_table(&pheromone, &distances);
+
+        probability.update_table(&trails);
+
+        for _ in 0..self.iterations {
+            let mut visited_routes: Vec<Vec<usize>> = vec![];
+
+            for ant in 0..self.ants {
+                let mut visited : Vec<usize> = vec![]; 
+
+                visited.push(ant);
+
+                while visited.len() != self.ants {
+                    let rd = rng.gen_range(0.0..1.0);
+
+                    let mut sum = 0.0;
+
+                    let last_visited = visited.last().unwrap();
+
+                    for (i,pr) in probability.table[*last_visited].iter().enumerate() {
+                        sum += pr;
+
+                        if rd < sum {
+                            trails.reduce_trail(&visited);
+                            probability.update_table(&trails);
+                            visited.push(i);
+                            break;
+                        }
+                    }
+                }
+
+                visited_routes.push(visited);
+
+                trails.init_table(&pheromone, &distances); // restore trails table after reduce trails
+                probability.update_table(&trails); // restore probability table
+            }
+            
+            // update pheromone table and routes
+            for visited in visited_routes.iter() {
+                let route = convert(visited, cities);
+
+                let length = caclulate_distance(&route);
+
+                pheromone.update_table(visited, length);
+
+                routes.push(route);
+            }
+        }
+
+        routes
     }
 }
 
@@ -193,7 +252,7 @@ mod solutions {
         let mut trails = Trail::new();
         let mut probability = Probability::new();
         
-        probability.initialize_table(size);
+        probability.init_table(size);
         pheromone.init_table(size);
         trails.init_table(&pheromone, &distances);
 
@@ -203,7 +262,7 @@ mod solutions {
                         vec![0.58578646, 0.0, 0.4142136],
                         vec![0.5, 0.5 , 0.0]], probability.table);
 
-        let mut visited : Vec<usize> = vec![0];
+        let mut visited : Vec<usize> = vec![0,2];
 
         trails.reduce_trail(&visited);
 
@@ -213,7 +272,7 @@ mod solutions {
                         vec![0.0, 0.0, 1.0],
                         vec![0.0, 1.0, 0.0]], probability.table);
 
-        visited.push(2);
+        
         visited.push(1);
 
         pheromone.update_table(&visited, 24.14);
@@ -221,5 +280,20 @@ mod solutions {
         assert_eq!(vec![vec![0.0, 0.3, 0.3157001], 
                         vec![0.3157001, 0.0, 0.3],
                         vec![0.3, 0.3157001, 0.0]], pheromone.table);
+    }
+
+    #[test]
+    fn simple_aco() {
+        let city_a = City::new(0.0, 0.0);
+        let city_b = City::new(10.0, 0.0);
+        let city_c = City::new(5.0, 5.0);
+
+        let mut cities = vec![city_a, city_b, city_c];
+
+        let solver = Aco::new(cities.len(), 100);
+
+        let routes = solver.solve(&cities);
+
+        assert_eq!(3, routes.len());
     }
 }
