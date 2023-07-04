@@ -11,6 +11,7 @@ pub enum DefaultPresets {
 }
 
 pub enum PresetSize {
+    Tiny,
     Small,
     Medium,
     Large
@@ -36,6 +37,15 @@ impl Preset {
         match input {
             DefaultPresets::USA => {
                 match size {
+                    PresetSize::Tiny => {
+                        self.cities = vec![        
+                            City::new( 224.7490,  90.3880), // Washington Seattle
+                            City::new( 940.3322,  580.6557), // Florida Orlando
+                            City::new( 652.1351,  557.8151), // Texas Houston
+                            City::new( 782.6872,  269.3301), // Illinois Chicago
+                            City::new( 1022.2527,  260.7585), // New York
+                        ]
+                    },
                     PresetSize::Small => {
                         self.cities = vec![        
                             City::new( 224.7490,  90.3880), // Washington Seattle
