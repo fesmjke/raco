@@ -11,10 +11,10 @@ impl BruteForce {
     }
 
     fn permutations(&self, cities: &Vec<City>) -> Vec<Vec<City>> {
+        let root_city = cities.first().expect("missing root city in a route").clone();
         let mut permutations : Vec<Vec<City>> = vec![];
-
         let mut stack : Vec<usize> = vec![];
-        let mut root_route = cities[1..].to_vec();
+        let mut root_route = cities.clone();
         let n = root_route.len();
 
         for _ in 0..n {
@@ -44,19 +44,22 @@ impl BruteForce {
             }
         }
 
-        return permutations;
+        let mut output = vec![];
+        let from_root = vec![root_city];
+        
+        for permutation in permutations.iter() {
+            if permutation.starts_with(&from_root) {
+                output.push(permutation.clone());
+            }
+        }
+
+        output
     }
 }
 
 impl Solution for BruteForce {
     fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
-        let mut root_route: Vec<City> = vec![];
-
-        for city in cities.iter() {
-            root_route.push(city.clone());
-        }
-        
-        self.permutations(&root_route)
+        self.permutations(&cities)
     }
 }
 
