@@ -1,4 +1,5 @@
 use raylib::prelude::*;
+use utils::choose_best;
 use std::fmt;
 
 use algorithms::{brute_force, nearest_neighbour, christofides, aco};
@@ -50,8 +51,8 @@ fn main() {
 
     rl.set_target_fps(60);
 
-    usa.create_cities(preset::DefaultPresets::USA, preset::PresetSize::Small);
-    let mut cities : &Vec<City> = usa.get_cities();
+    usa.create_cities(preset::DefaultPresets::USA, preset::PresetSize::Medium);
+    let cities : &Vec<City> = usa.get_cities();
 
     let n = cities.len();
 
@@ -60,94 +61,81 @@ fn main() {
     let christofides = christofides::Christofides::new();
     let nn = nearest_neighbour::NearestNeighbour::new();
     let brute = brute_force::BruteForce::new();
-    let aco = aco::Aco::new(n, 10);
+    let aco = aco::Aco::new(n, 500);
 
-    // Its looks horrible 
-    let mut routes = aco.solve(&cities);
+    let mut routes = aco.solve(cities);
 
-    let mut route_index = 1;
+    let mut total_routes = routes.len();
 
-    let mut path = Path::new(routes[0].clone(), cities[0].clone());
+    let mut best_route = choose_best(&routes);
 
-    let mut distances : Vec<f32> = vec![];
-    let mut best_route = 0 as usize;
-    let mut chosen = false;
+    let mut path = Path::new(routes.first().expect("first route is missing"));
 
-    while !rl.window_should_close() {        
-        if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_R) {
+    let mut iterator = routes.iter();
 
+    let mut drawing = true;
+
+    while !rl.window_should_close() {
+        if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_SPACE) {
             match state {
                 States::Brute => {
-                    state = States::NN;
-                    routes = nn.solve(&cities);
+                    state = States::NN
                 },
                 States::NN => {
-                    state = States::Christofides;
-                    routes = christofides.solve(&cities);
+                    state = States::Christofides
                 },
                 States::Christofides => {
-                    state = States::ACO;
-                    routes = aco.solve(&cities);
+                    state = States::ACO
                 },
                 States::ACO => {
                     if n > 5 {
-                        state = States::NN;
-                        routes = nn.solve(&cities);
+                        state = States::NN
                     } else {
-                        state = States::Brute;
-                        routes = brute.solve(&cities);
+                        state = States::Brute
                     }
                 },
             }
+        }
 
-            route_index = 1;
+        if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_ENTER) {
+            match state {
+                States::Brute => routes = brute.solve(cities),
+                States::NN => routes = nn.solve(cities),
+                States::Christofides => routes = christofides.solve(cities),
+                States::ACO => routes = aco.solve(cities),
+            }
+            total_routes = routes.len();
 
-            path = Path::new(routes[0].clone(), cities[0].clone());
+            best_route = choose_best(&routes);
 
-            distances = vec![];
-            best_route = 0;
-            chosen = false;
+            iterator = routes.iter();
+        }
+        
+        if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_S) {
+            drawing = !drawing;
         }
         
         let mut d = rl.begin_drawing(&thread);
 
         d.draw_texture(usa.get_texture(), 0, 0, Color::WHITE);
 
-        // This looks horrible too
-        match path.draw_mut(&mut d) {
-            drawable::DrawState::Drawing => {},
-            drawable::DrawState::Finished => {
-                if distances.len() == routes.len() - 1 && !chosen {
-                    best_route = distances.iter()
-                    .enumerate()
-                    .min_by(|(_, a), (_, b)| a.total_cmp(b))
-                    .map(|(index, _)| index).unwrap();
-                    
-                    chosen = true;
-
-                    path = Path::new(routes[best_route].clone(), cities[0].clone());
-
-                    continue;
-                }
-
-                if !chosen { 
-                    distances.push(path.total_distance());
-
-                    path = Path::new(routes[route_index].clone(), cities[0].clone());
-
-                    route_index += 1;
-                }
+        if drawing {
+            match iterator.next() {
+                Some(route) => {
+                    path.replace(route);
+                },
+                None => path.replace(&routes[best_route]),
             }
+        } else {
+            path.replace(&routes[best_route]);
         }
 
-        if chosen {
-            path.draw(&mut d);
-        }
+        path.draw(&mut d);
 
-        d.draw_text(format!("Total distance : {:.2}", path.total_distance() / 100.0).as_str(), 0, 0, 24, Color::BLACK);
-        d.draw_text(format!("Current route index: {}", route_index).as_str(), 0, 24, 24, Color::BLACK);
-        d.draw_text(format!("Best route index: {}", best_route).as_str(), 0, 48, 24, Color::BLACK);
-        d.draw_text(format!("Algorithm: {}", state).as_str(), 0, 72, 24, Color::BLACK);
+        d.draw_text(format!("Total distance : {:.2}", path.total_distance() / 100.0).as_str(), 0, 0, 20, Color::BLACK);
+        d.draw_text(format!("Current route index: {} / {}", iterator.len(), total_routes).as_str(), 0, 24, 20, Color::BLACK);
+        d.draw_text(format!("Best route index: {} / {}", best_route, total_routes).as_str(), 0, 48, 20, Color::BLACK);
+        d.draw_text(format!("Algorithm: {}", state).as_str(), 0, 72, 20, Color::BLACK);
 
         d.clear_background(Color::WHITE);
     }
