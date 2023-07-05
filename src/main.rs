@@ -71,7 +71,7 @@ fn main() {
 
     let mut distances : Vec<f32> = vec![];
     let mut best_route = 0 as usize;
-    let mut choosed = false;
+    let mut chosen = false;
 
     while !rl.window_should_close() {        
         if rl.is_key_pressed(raylib::consts::KeyboardKey::KEY_R) {
@@ -106,7 +106,7 @@ fn main() {
 
             distances = vec![];
             best_route = 0;
-            choosed = false;
+            chosen = false;
         }
         
         let mut d = rl.begin_drawing(&thread);
@@ -117,20 +117,20 @@ fn main() {
         match path.draw_mut(&mut d) {
             drawable::DrawState::Drawing => {},
             drawable::DrawState::Finished => {
-                if distances.len() == routes.len() - 1 && !choosed {
+                if distances.len() == routes.len() - 1 && !chosen {
                     best_route = distances.iter()
                     .enumerate()
                     .min_by(|(_, a), (_, b)| a.total_cmp(b))
                     .map(|(index, _)| index).unwrap();
                     
-                    choosed = true;
+                    chosen = true;
 
                     path = Path::new(routes[best_route].clone(), cities[0].clone());
 
                     continue;
                 }
 
-                if !choosed { 
+                if !chosen { 
                     distances.push(path.total_distance());
 
                     path = Path::new(routes[route_index].clone(), cities[0].clone());
@@ -140,7 +140,7 @@ fn main() {
             }
         }
 
-        if choosed {
+        if chosen {
             path.draw(&mut d);
         }
 
