@@ -56,11 +56,14 @@ pub fn convert(indexes: &Vec<usize>,cities :&Vec<City>) -> Vec<City> {
 
 pub fn choose_best(routes : &Vec<Vec<City>>) -> usize {
     let mut best = 0 as usize;
-    let length = caclulate_distance(routes.first().expect("first route missing"));
+    let mut length = caclulate_distance(routes.first().expect("first route missing"));
 
     for (index,route) in routes.iter().enumerate() {
-        if length > caclulate_distance(route) {
+        let delta = caclulate_distance(route);
+        
+        if length > delta {
             best = index;
+            length = delta;
         }
     }
 
