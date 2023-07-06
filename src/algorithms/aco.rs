@@ -20,7 +20,7 @@ impl Trail {
         Self {
             table : vec![],
             alpha: 1.0, 
-            beta: 1.0 
+            beta: 4.0 
         }
     }
 
@@ -65,9 +65,9 @@ impl Pheromone {
     fn new() -> Self {
         Self { 
             table: vec![],
-            pheromone_strength: 0.3,
+            pheromone_strength: 1.0,
             Q : 4.0,
-            evaporation: 0.5,
+            evaporation: 0.3,
         }
     }
 
@@ -92,20 +92,44 @@ impl Pheromone {
         let delta = self.Q / length;
         let mut current = route[0];
 
-        let mut initial = true;
-
         for index in route.iter() {
-            if initial {
-                initial = false;
+            if *index == current {
                 continue;
             }
             
             self.table[current][*index] = ((1.0 - self.evaporation) * self.table[current][*index]) + delta;
-
+            self.table[*index][current] = ((1.0 - self.evaporation) * self.table[*index][current]) + delta;
             current = *index;
         }
 
         self.table[current][route[0]] = ((1.0 - self.evaporation) * self.table[current][route[0]]) + delta;
+        self.table[route[0]][current] = ((1.0 - self.evaporation) * self.table[route[0]][current]) + delta;
+    }
+
+    pub fn best_route(&self, start: usize) -> Vec<usize> {
+        let mut route = vec![];
+
+        route.push(start);
+
+        while route.len() != self.table.len() {
+            let last = route.last().unwrap();
+            let mut lowest = f32::MIN;
+            let mut current = 0 as usize;
+            for (index, value) in self.table[*last].iter().enumerate() {
+                if route.contains(&index) {
+                    continue;
+                }
+
+                if lowest < *value {
+                    current = index;
+                    lowest = *value;
+                }
+            }
+
+            route.push(current);
+        }
+
+        route
     }
 }
 
@@ -165,6 +189,7 @@ impl Solution for Aco {
         let mut rng = rand::thread_rng();
 
         let mut distances = adjacency_matrix(&cities);
+        
         scale_distances(&mut distances, 100.0);
         
         let size = cities.len();
@@ -211,28 +236,30 @@ impl Solution for Aco {
                 trails.init_table(&pheromone, &distances); // restore trails table after reduce trails
                 probability.update_table(&trails); // restore probability table
             }
-            
-            // update pheromone table and routes
+
+            // update pheromone table
             for visited in visited_routes.iter() {
                 let route = convert(visited, cities);
 
-                let length = caclulate_distance(&route);
+                let length = caclulate_distance(&route) / 100.0;
 
                 pheromone.update_table(visited, length);
 
                 routes.push(route);
             }
+
+            // update trails and probability tables after pheromone update
+            trails.init_table(&pheromone, &distances);
+            probability.update_table(&trails);
+
+            visited_routes.clear();
         }
-
-        let mut temp : Vec<Vec<City>> = vec![];
         
-        for route in routes.iter() {
-            if route.starts_with(&[cities[0].clone()]) {
-                temp.push(route.clone());
-            }
-        } 
-
-        temp
+        for ant in 0..self.ants {
+            routes.push(convert(&pheromone.best_route(ant), cities));
+        }
+        
+        routes
     }
 }
 
@@ -291,13 +318,16 @@ mod solutions {
         let city_a = City::new(0.0, 0.0);
         let city_b = City::new(10.0, 0.0);
         let city_c = City::new(5.0, 5.0);
+        let city_d = City::new(4.0, 8.0);
+        let city_e = City::new(8.0, 3.0);
 
-        let cities = vec![city_a, city_b, city_c];
+
+        let cities = vec![city_a, city_b, city_c, city_d, city_e];
 
         let solver = Aco::new(cities.len(), 100);
 
         let routes = solver.solve(&cities);
 
-        assert_eq!(100, routes.len());
+        assert_eq!(cities.len() * 100 + cities.len(), routes.len());
     }
 }
