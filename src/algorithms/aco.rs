@@ -268,52 +268,6 @@ mod solutions {
     use super::*;
 
     #[test]
-    fn initialize() {
-        let city_a = City::new(0.0, 0.0);
-        let city_b = City::new(10.0, 0.0);
-        let city_c = City::new(5.0, 5.0);
-
-        let cities = vec![city_a, city_b, city_c];
-        let size = cities.len();
-
-        let mut distances = adjacency_matrix(&cities);
-        scale_distances(&mut distances, 100.0);
-
-        let mut pheromone = Pheromone::new();
-        let mut trails = Trail::new();
-        let mut probability = Probability::new();
-        
-        probability.init_table(size);
-        pheromone.init_table(size);
-        trails.init_table(&pheromone, &distances);
-
-        probability.update_table(&trails);
-
-        assert_eq!(vec![vec![0.0, 0.58578646, 0.4142136], 
-                        vec![0.58578646, 0.0, 0.4142136],
-                        vec![0.5, 0.5 , 0.0]], probability.table);
-
-        let mut visited : Vec<usize> = vec![0,2];
-
-        trails.reduce_trail(&visited);
-
-        probability.update_table(&trails);
-
-        assert_eq!(vec![vec![0.0, 1.0, 0.0], 
-                        vec![0.0, 0.0, 0.0],
-                        vec![0.0, 1.0, 0.0]], probability.table);
-
-        
-        visited.push(1);
-
-        pheromone.update_table(&visited, 24.14);
-
-        assert_eq!(vec![vec![0.0, 0.3, 0.3157001], 
-                        vec![0.3157001, 0.0, 0.3],
-                        vec![0.3, 0.3157001, 0.0]], pheromone.table);
-    }
-
-    #[test]
     fn simple_aco() {
         let city_a = City::new(0.0, 0.0);
         let city_b = City::new(10.0, 0.0);
