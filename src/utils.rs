@@ -1,50 +1,39 @@
 use crate::city::City;
 
+/// Creates a adjacency matrix between cities
 pub fn adjacency_matrix(cities: &Vec<City>) -> Vec<Vec<f32>> {
-    let mut matrix : Vec<Vec<f32>> = vec![];
-    
-    for i in 0..cities.len() {
-        let mut row :Vec<f32> = vec![];
-
-        for j in 0..cities.len() {
-            if i == j {
-                row.push(0.0);
-                continue;
-            }
-
-            row.push(cities[i].position().distance_to(*cities[j].position()));
-        }
-
-        matrix.push(row);
-    }
-
-    matrix
+    cities
+        .iter()
+        .map(|current_city| {
+            cities
+                .iter()
+                .map(|next_city| current_city.distance_between(next_city))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>()
 }
 
-pub fn scale_distances(distances :&mut Vec<Vec<f32>>, slace_factor: f32) {
-    for row in distances.iter_mut() {
-        for value in row.iter_mut() {
-            *value /= slace_factor;
-        }
-    }
+/// Scale distance matrix by scale factor
+pub fn scale_distances(distances: &mut Vec<Vec<f32>>, scale_factor: f32) {
+    distances.iter_mut().for_each(|row| {
+        row.iter_mut()
+            .for_each(|distance| *distance *= scale_factor)
+    });
 }
 
-pub fn caclulate_distance(route :&Vec<City>) -> f32 {
-    let mut length = 0.0;
-    let mut current = route[0].clone();
-
-    for city in route.iter() {
-        length += current.position().distance_to(*city.position());
-
-        current = city.clone();
-    }
-
-    length += current.position().distance_to(*route[0].position());
-
-    length
+/// Caclulate total route length between cities
+pub fn route_length(route: &Vec<City>) -> f32 {
+    route
+        .iter()
+        .zip(route.iter().cycle().skip(1))
+        .take(route.len())
+        .fold(0.0, |acc, (city_a, city_b)| {
+            acc + city_a.distance_between(city_b)
+        })
 }
 
-pub fn convert(indexes: &Vec<usize>,cities :&Vec<City>) -> Vec<City> {
+// TODO WHAT THE HELL???
+pub fn convert(indexes: &Vec<usize>, cities: &Vec<City>) -> Vec<City> {
     let mut temp = vec![];
 
     for index in indexes.iter() {
@@ -54,13 +43,13 @@ pub fn convert(indexes: &Vec<usize>,cities :&Vec<City>) -> Vec<City> {
     temp
 }
 
-pub fn choose_best(routes : &Vec<Vec<City>>) -> usize {
+pub fn choose_best(routes: &Vec<Vec<City>>) -> usize {
     let mut best = 0 as usize;
-    let mut length = caclulate_distance(routes.first().expect("first route missing"));
+    let mut length = route_length(routes.first().expect("first route missing"));
 
-    for (index,route) in routes.iter().enumerate() {
-        let delta = caclulate_distance(route);
-        
+    for (index, route) in routes.iter().enumerate() {
+        let delta = route_length(route);
+
         if length > delta {
             best = index;
             length = delta;
@@ -71,19 +60,58 @@ pub fn choose_best(routes : &Vec<Vec<City>>) -> usize {
 }
 
 #[cfg(test)]
-mod utils {
-    use super::*;
+mod utils_tests {
+    use super::{adjacency_matrix, *};
 
     #[test]
-    fn calc_distance() {
-        let city_a = City::new(0.0, 0.0);
-        let city_b = City::new(10.0, 0.0);
-        let city_c = City::new(5.0, 5.0);
+    fn adjacency_matrix_test() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
+
+        let cities = vec![city_a, city_b, city_c];
+
+        let matrix = adjacency_matrix(&cities);
+
+        let expected_matrix = vec![
+            vec![0.0, 10.0, 10.0],
+            vec![10.0, 0.0, 14.142136],
+            vec![10.0, 14.142136, 0.0],
+        ];
+
+        assert_eq!(expected_matrix, matrix);
+    }
+
+    #[test]
+    fn scale_distances_test() {
+        let mut matrix = vec![
+            vec![0.0, 10.0, 10.0],
+            vec![10.0, 0.0, 1.0],
+            vec![10.0, 1.0, 0.0],
+        ];
+
+        scale_distances(&mut matrix, 0.1);
+
+        let expected_matrix = vec![
+            vec![0.0, 1.0, 1.0],
+            vec![1.0, 0.0, 0.1],
+            vec![1.0, 0.1, 0.0],
+        ];
+
+        assert_eq!(expected_matrix, matrix);
+    }
+
+    #[test]
+    fn total_route_distance_test() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
 
         let route = vec![city_a, city_b, city_c];
 
-        let length = caclulate_distance(&route);
+        let route_length = route_length(&route);
+        let exptected_length = 34.1421356237;
 
-        assert_eq!(24.142136 ,length)
+        assert_eq!(exptected_length, route_length);
     }
 }
