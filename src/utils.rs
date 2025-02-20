@@ -1,11 +1,13 @@
-use crate::city::City;
+use crate::{city::City, path::Route};
 
 /// Creates a adjacency matrix between cities
-pub fn adjacency_matrix(cities: &Vec<City>) -> Vec<Vec<f32>> {
-    cities
+pub fn adjacency_matrix(route: &Route) -> Vec<Vec<f32>> {
+    route
+        .cities
         .iter()
         .map(|current_city| {
-            cities
+            route
+                .cities
                 .iter()
                 .map(|next_city| current_city.distance_between(next_city))
                 .collect::<Vec<_>>()
@@ -22,11 +24,12 @@ pub fn scale_distances(distances: &mut Vec<Vec<f32>>, scale_factor: f32) {
 }
 
 /// Caclulate total route length between cities
-pub fn route_length(route: &Vec<City>) -> f32 {
+pub fn route_length(route: &Route) -> f32 {
     route
+        .cities
         .iter()
-        .zip(route.iter().cycle().skip(1))
-        .take(route.len())
+        .zip(route.cities.iter().cycle().skip(1))
+        .take(route.cities.len())
         .fold(0.0, |acc, (city_a, city_b)| {
             acc + city_a.distance_between(city_b)
         })
@@ -43,20 +46,20 @@ pub fn convert(indexes: &Vec<usize>, cities: &Vec<City>) -> Vec<City> {
     temp
 }
 
-pub fn choose_best(routes: &Vec<Vec<City>>) -> usize {
-    let mut best = 0 as usize;
-    let mut length = route_length(routes.first().expect("first route missing"));
+/// Return best route index
+pub fn best_route_index(routes: &Vec<Route>) -> usize {
+    assert!(!routes.is_empty());
 
-    for (index, route) in routes.iter().enumerate() {
-        let delta = route_length(route);
-
-        if length > delta {
-            best = index;
-            length = delta;
-        }
-    }
-
-    best
+    routes
+        .iter()
+        .enumerate()
+        .min_by(|(_, current_route), (_, next_route)| {
+            route_length(current_route)
+                .partial_cmp(&route_length(next_route))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(index, _)| index)
+        .unwrap_or(0)
 }
 
 #[cfg(test)]
@@ -70,8 +73,9 @@ mod utils_tests {
         let city_c = City::new(0.0, 10.0, 1.0);
 
         let cities = vec![city_a, city_b, city_c];
+        let route = Route::new(&cities);
 
-        let matrix = adjacency_matrix(&cities);
+        let matrix = adjacency_matrix(&route);
 
         let expected_matrix = vec![
             vec![0.0, 10.0, 10.0],
@@ -107,11 +111,36 @@ mod utils_tests {
         let city_b = City::new(10.0, 0.0, 1.0);
         let city_c = City::new(0.0, 10.0, 1.0);
 
-        let route = vec![city_a, city_b, city_c];
+        let cities = vec![city_a, city_b, city_c];
+        let route = Route::new(&cities);
 
         let route_length = route_length(&route);
         let exptected_length = 34.1421356237;
 
         assert_eq!(exptected_length, route_length);
+    }
+
+    #[test]
+    fn best_route_index_test() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
+
+        let cities = vec![city_a, city_b, city_c];
+        let route_1 = Route::new(&cities);
+
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(9.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
+
+        let cities = vec![city_a, city_b, city_c];
+        let route_2 = Route::new(&cities);
+
+        let routes = vec![route_1, route_2];
+
+        let best_route_index = best_route_index(&routes);
+        let expected_best_index = 1;
+
+        assert_eq!(expected_best_index, best_route_index);
     }
 }
