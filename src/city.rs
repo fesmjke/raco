@@ -1,9 +1,9 @@
-use crate::drawable::Drawable;
+use crate::Rendereable;
 use macroquad::color::BLACK;
 use macroquad::math::Vec2;
 use macroquad::shapes::draw_circle;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct City {
     position: Vec2,
     size: f32,
@@ -32,8 +32,8 @@ impl PartialEq for City {
     }
 }
 
-impl Drawable for City {
-    fn draw(&self) {
+impl Rendereable for City {
+    fn render(&self) {
         draw_circle(self.position.x, self.position.y, self.size, BLACK);
     }
 }
