@@ -1,7 +1,8 @@
 use crate::city::City;
-use crate::drawable::Drawable;
 use crate::utils::route_length;
+use crate::Rendereable;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Route<'a> {
     pub(crate) cities: &'a Vec<City>,
 }
@@ -20,6 +21,6 @@ impl<'a> Route<'a> {
     }
 }
 
-impl<'a> Drawable for Route<'a> {
-    fn draw(&self) {}
+impl<'a> Rendereable for Route<'a> {
+    fn render(&self) {}
 }
