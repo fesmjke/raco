@@ -1,4 +1,4 @@
-use crate::{city::City, path::Route};
+use crate::{city::City, route::Route};
 
 /// Creates a adjacency matrix between cities
 pub fn adjacency_matrix(route: &Route) -> Vec<Vec<f32>> {
