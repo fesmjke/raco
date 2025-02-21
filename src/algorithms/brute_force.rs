@@ -1,99 +1,92 @@
-use crate::solution::Solution;
 use crate::city::City;
+use crate::route::Route;
+use crate::utils::best_route;
+use crate::Solver;
 
 pub struct BruteForce;
 
-impl BruteForce {
-    pub fn new() -> Self {
-        Self {
-
-        }
+fn heaps(cities: usize, permutation: &mut Vec<City>, permutations: &mut Vec<Vec<City>>) {
+    if !permutations.contains(&permutation) {
+        permutations.push(permutation.to_vec());
     }
 
-    fn permutations(&self, cities: &Vec<City>) -> Vec<Vec<City>> {
-        let root_city = cities.first().expect("missing root city in a route").clone();
-        let mut permutations : Vec<Vec<City>> = vec![];
-        let mut stack : Vec<usize> = vec![];
-        let mut root_route = cities.clone();
-        let n = root_route.len();
+    match cities {
+        0 | 1 => {}
+        _ => {
+            for i in 0..cities {
+                heaps(cities - 1, permutation, permutations);
 
-        for _ in 0..n {
-            stack.push(0);
-        }
-
-        permutations.push(root_route.clone());
-
-        let mut i: usize = 0;
-
-        while i < n {
-            if stack[i] < i {
-                if i % 2 == 0 {
-                    root_route.swap(0, i);
+                if cities % 2 == 0 {
+                    permutation.swap(i, cities - 1);
                 } else {
-                    root_route.swap(stack[i], i);
+                    permutation.swap(0, cities - 1);
                 }
-
-                permutations.push(root_route.clone());
-
-                stack[i] += 1;
-
-                i = 0;
-            } else {
-                stack[i] = 0;
-                i += 1;
             }
         }
-
-        let mut output = vec![];
-        let from_root = vec![root_city];
-        
-        for permutation in permutations.iter() {
-            if permutation.starts_with(&from_root) {
-                output.push(permutation.clone());
-            }
-        }
-
-        output
     }
 }
 
-impl Solution for BruteForce {
-    fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
-        self.permutations(&cities)
+impl<'a> Solver<'a> for BruteForce {
+    fn solve(routes: &[Route]) -> Route {
+        best_route(routes)
+    }
+
+    fn get_routes(cities: &[City]) -> Vec<Route> {
+        assert!(cities.len() <= 6);
+
+        let mut permutations_heaps = vec![];
+        let initial_heaps = cities;
+
+        heaps(
+            cities.len(),
+            &mut initial_heaps.to_vec(),
+            &mut permutations_heaps,
+        );
+
+        permutations_heaps
+            .into_iter()
+            .map(|x| Route::new(x))
+            .collect()
     }
 }
 
 #[cfg(test)]
-mod solutions {
+mod brute_force_tests {
     use super::*;
 
+    const EXPECTED_THREE_FACT: usize = 1 * 2 * 3;
+    const EXPECTED_FOUR_FACT: usize = 1 * 2 * 3 * 4;
+    const EXPECTED_FIVE_FACT: usize = 1 * 2 * 3 * 4 * 5;
+    const EXPECTED_SIX_FACT: usize = 1 * 2 * 3 * 4 * 5 * 6;
+
     #[test]
-    fn brute_force() {
-        
-        let city_a = City::new(0.0, 0.0);
-        let city_b = City::new(10.0, 0.0);
-        let city_c = City::new(5.0, 5.0);
-        let city_d = City::new(15.0, 8.0);
-        let city_e = City::new(8.0, 31.0);
+    fn three_cities() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(5.0, 5.0, 1.0);
+        let city_d = City::new(5.0, 9.0, 1.0);
+        let city_e = City::new(3.0, 1.0, 1.0);
+        let city_q = City::new(3.0, 15.0, 1.0);
 
-        let mut cities = vec![city_a, city_b, city_c];
+        let expected_best_route = Route::new(vec![city_a, city_e, city_b, city_c, city_d, city_q]);
+        let expected_order = vec![
+            EXPECTED_SIX_FACT,
+            EXPECTED_FIVE_FACT,
+            EXPECTED_FOUR_FACT,
+            EXPECTED_THREE_FACT,
+        ];
 
-        let brute_force = BruteForce::new();
+        let cities = vec![city_a, city_b, city_c, city_d, city_e, city_q];
 
-        let mut answer = brute_force.solve(&cities);
+        for (index, expected) in expected_order.into_iter().enumerate() {
+            let routes = BruteForce::get_routes(&cities[..cities.len() - index]);
 
-        assert_eq!(2, answer.len());
+            assert_eq!(expected, routes.len());
+        }
 
-        cities.push(city_d);
+        let routes = BruteForce::get_routes(&cities);
+        let best_route = BruteForce::solve(&routes);
 
-        answer = brute_force.solve(&cities);
-
-        assert_eq!(6, answer.len());
-
-        cities.push(city_e);
-
-        answer = brute_force.solve(&cities);
-
-        assert_eq!(24, answer.len());
+        assert_eq!(expected_best_route, best_route);
     }
 }
