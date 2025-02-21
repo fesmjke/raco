@@ -2,25 +2,25 @@ use crate::city::City;
 use crate::utils::route_length;
 use crate::Rendereable;
 
-#[derive(Debug, Clone, Copy)]
-pub struct Route<'a> {
-    pub(crate) cities: &'a Vec<City>,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Route {
+    pub(crate) cities: Vec<City>,
 }
 
-impl<'a> Route<'a> {
-    pub fn new(cities: &'a Vec<City>) -> Self {
-        Self { cities: &cities }
+impl Route {
+    pub fn new(cities: Vec<City>) -> Self {
+        Self { cities }
     }
 
     pub fn path_length(&self) -> f32 {
         route_length(&self)
     }
 
-    pub fn replace(&mut self, cities: &'a Vec<City>) {
-        self.cities = &cities;
+    pub fn replace(&mut self, cities: Vec<City>) {
+        self.cities = cities;
     }
 }
 
-impl<'a> Rendereable for Route<'a> {
+impl Rendereable for Route {
     fn render(&self) {}
 }
