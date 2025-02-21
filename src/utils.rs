@@ -1,13 +1,11 @@
 use crate::{city::City, route::Route};
 
 /// Creates a adjacency matrix between cities
-pub fn adjacency_matrix(route: &Route) -> Vec<Vec<f32>> {
-    route
-        .cities
+pub fn adjacency_matrix(cities: &Vec<City>) -> Vec<Vec<f32>> {
+    cities
         .iter()
         .map(|current_city| {
-            route
-                .cities
+            cities
                 .iter()
                 .map(|next_city| current_city.distance_between(next_city))
                 .collect::<Vec<_>>()
@@ -47,7 +45,7 @@ pub fn convert(indexes: &Vec<usize>, cities: &Vec<City>) -> Vec<City> {
 }
 
 /// Return best route index
-pub fn best_route_index(routes: &Vec<Route>) -> usize {
+pub fn best_route_index(routes: &[Route]) -> usize {
     assert!(!routes.is_empty());
 
     routes
@@ -62,6 +60,13 @@ pub fn best_route_index(routes: &Vec<Route>) -> usize {
         .unwrap_or(0)
 }
 
+/// Return a best route from generated routes
+pub fn best_route(routes: &[Route]) -> Route {
+    let index = best_route_index(routes);
+
+    routes[index].clone()
+}
+
 #[cfg(test)]
 mod utils_tests {
     use super::{adjacency_matrix, *};
@@ -73,9 +78,8 @@ mod utils_tests {
         let city_c = City::new(0.0, 10.0, 1.0);
 
         let cities = vec![city_a, city_b, city_c];
-        let route = Route::new(&cities);
 
-        let matrix = adjacency_matrix(&route);
+        let matrix = adjacency_matrix(&cities);
 
         let expected_matrix = vec![
             vec![0.0, 10.0, 10.0],
@@ -112,7 +116,7 @@ mod utils_tests {
         let city_c = City::new(0.0, 10.0, 1.0);
 
         let cities = vec![city_a, city_b, city_c];
-        let route = Route::new(&cities);
+        let route = Route::new(cities);
 
         let route_length = route_length(&route);
         let exptected_length = 34.1421356237;
@@ -127,14 +131,14 @@ mod utils_tests {
         let city_c = City::new(0.0, 10.0, 1.0);
 
         let cities = vec![city_a, city_b, city_c];
-        let route_1 = Route::new(&cities);
+        let route_1 = Route::new(cities);
 
         let city_a = City::new(0.0, 0.0, 1.0);
         let city_b = City::new(9.0, 0.0, 1.0);
         let city_c = City::new(0.0, 10.0, 1.0);
 
         let cities = vec![city_a, city_b, city_c];
-        let route_2 = Route::new(&cities);
+        let route_2 = Route::new(cities);
 
         let routes = vec![route_1, route_2];
 
