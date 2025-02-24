@@ -13,13 +13,6 @@ pub trait Solver<'a> {
     fn get_routes(cities: &[City]) -> Vec<Route>;
 }
 
-pub fn solve<'a, S>(routes: &'a Vec<Route>)
-where
-    S: Solver<'a>,
-{
-    S::solve(routes);
-}
-
 pub mod algorithms {
     pub use brute_force::BruteForce;
     pub mod brute_force;
@@ -29,4 +22,5 @@ pub mod algorithms {
 pub mod city;
 pub mod preset;
 pub mod route;
+pub mod tsp;
 pub mod utils;
