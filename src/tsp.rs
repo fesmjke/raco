@@ -1,21 +1,15 @@
 // TODO I don't like this solution, so later think about another way of solving this
-use macroquad::{
-    color::WHITE,
-    texture::{draw_texture, Texture2D},
-};
 
 use crate::{city::City, route::Route, Rendereable, Solver};
 
 pub struct TSP {
-    pub map: Texture2D,
     pub routes: Vec<Route>,
     pub best_route: Route,
 }
 
 impl TSP {
-    pub fn new(texture: Texture2D) -> Self {
+    pub fn new() -> Self {
         Self {
-            map: texture,
             routes: vec![],
             best_route: Route::new(vec![]),
         }
@@ -37,8 +31,8 @@ impl TSP {
     }
 }
 
-impl Rendereable for TSP {
-    fn render(&self) {
-        draw_texture(&self.map, 0., 0., WHITE);
-    }
-}
+// impl Rendereable for TSP {
+//     fn render(&self) {
+//         draw_texture(&self.map, 0., 0., WHITE);
+//     }
+// }
