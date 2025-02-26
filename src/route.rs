@@ -8,15 +8,20 @@ use crate::Rendereable;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Route {
     pub(crate) cities: Vec<City>,
+    length: f32,
 }
 
 impl Route {
     pub fn new(cities: Vec<City>) -> Self {
-        Self { cities }
+        let mut route = Self { cities, length: 0. };
+
+        route.length = route_length(&route);
+
+        route
     }
 
-    pub fn path_length(&self) -> f32 {
-        route_length(&self)
+    pub fn route_length(&self) -> f32 {
+        self.length
     }
 
     pub fn replace(&mut self, cities: Vec<City>) {
