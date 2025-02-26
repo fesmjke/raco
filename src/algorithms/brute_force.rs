@@ -64,7 +64,7 @@ mod brute_force_tests {
     const EXPECTED_SIX_FACT: usize = 1 * 2 * 3 * 4 * 5 * 6;
 
     #[test]
-    fn three_cities() {
+    fn find_best() {
         let city_a = City::new(0.0, 0.0, 1.0);
         let city_b = City::new(10.0, 0.0, 1.0);
         let city_c = City::new(5.0, 5.0, 1.0);
