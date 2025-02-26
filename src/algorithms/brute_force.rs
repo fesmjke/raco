@@ -5,6 +5,10 @@ use crate::Solver;
 
 pub struct BruteForce;
 
+impl BruteForce {
+    pub const CITY_LIMIT: usize = 6;
+}
+
 fn heaps(cities: usize, permutation: &mut Vec<City>, permutations: &mut Vec<Vec<City>>) {
     if !permutations.contains(&permutation) {
         permutations.push(permutation.to_vec());
@@ -32,7 +36,7 @@ impl<'a> Solver<'a> for BruteForce {
     }
 
     fn get_routes(cities: &[City]) -> Vec<Route> {
-        assert!(cities.len() <= 6);
+        assert!(cities.len() <= BruteForce::CITY_LIMIT);
 
         let mut permutations_heaps = vec![];
         let initial_heaps = cities;
