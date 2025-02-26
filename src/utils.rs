@@ -60,9 +60,32 @@ pub fn best_route_index(routes: &[Route]) -> usize {
         .unwrap_or(0)
 }
 
+/// Return worst route index
+pub fn worst_route_index(routes: &[Route]) -> usize {
+    assert!(!routes.is_empty());
+
+    routes
+        .iter()
+        .enumerate()
+        .max_by(|(_, current_route), (_, next_route)| {
+            route_length(current_route)
+                .partial_cmp(&route_length(next_route))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(index, _)| index)
+        .unwrap_or(0)
+}
+
 /// Return a best route from generated routes
 pub fn best_route(routes: &[Route]) -> Route {
     let index = best_route_index(routes);
+
+    routes[index].clone()
+}
+
+/// Return a worst route from generated routes
+pub fn worst_route(routes: &[Route]) -> Route {
+    let index = worst_route_index(routes);
 
     routes[index].clone()
 }
@@ -146,5 +169,29 @@ mod utils_tests {
         let expected_best_index = 1;
 
         assert_eq!(expected_best_index, best_route_index);
+    }
+
+    #[test]
+    fn worst_route_index_test() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
+
+        let cities = vec![city_a, city_b, city_c];
+        let route_1 = Route::new(cities);
+
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(9.0, 0.0, 1.0);
+        let city_c = City::new(0.0, 10.0, 1.0);
+
+        let cities = vec![city_a, city_b, city_c];
+        let route_2 = Route::new(cities);
+
+        let routes = vec![route_1, route_2];
+
+        let best_worst_index = worst_route_index(&routes);
+        let expected_worst_index = 0;
+
+        assert_eq!(expected_worst_index, best_worst_index);
     }
 }
