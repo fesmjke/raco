@@ -1,10 +1,11 @@
 // TODO I don't like this solution, so later think about another way of solving this
 
-use crate::{city::City, route::Route, Rendereable, Solver};
+use crate::{city::City, route::Route, utils::worst_route, Solver};
 
 pub struct TSP {
     pub routes: Vec<Route>,
     pub best_route: Route,
+    pub worst_route: Route,
 }
 
 impl TSP {
@@ -12,6 +13,7 @@ impl TSP {
         Self {
             routes: vec![],
             best_route: Route::new(vec![]),
+            worst_route: Route::new(vec![]),
         }
     }
 
@@ -26,6 +28,8 @@ impl TSP {
 
         self.routes = routes;
         self.best_route = best;
+
+        self.worst_route = worst_route(&self.routes);
 
         &self.routes
     }
