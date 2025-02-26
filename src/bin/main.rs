@@ -38,15 +38,16 @@ async fn main() {
 
     request_new_screen_size(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    let mut algorithms = [Algorithms::BruteForce, Algorithms::NearestNeighbour];
-
     let mut check_box_algorithm = 0;
     let mut tsp = TSP::new();
-    let mut best_distance = String::new();
-    let mut best_route = true;
-    let mut worts_route = false;
 
-    let mut test_cities: Vec<City> = vec![];
+    let mut best_distance = String::new(); // label
+    let mut worst_distance = String::new(); // label
+    let mut best_route = true;
+    let mut worst_route = false;
+    let mut algorithm = Algorithms::BruteForce;
+
+    let mut cities: Vec<City> = vec![];
     loop {
         clear_background(WHITE);
 
@@ -65,20 +66,27 @@ async fn main() {
                         &mut check_box_algorithm,
                     );
 
-                    // match check_box_algorithm {
-                    //     _ => {
-                    //         todo!()
-                    //     }
-                    // }
+                    match check_box_algorithm {
+                        0 => {
+                            algorithm = Algorithms::BruteForce;
+                        }
+                        1 => {
+                            algorithm = Algorithms::NearestNeighbour;
+                        }
+                        _ => {
+                            unreachable!()
+                        }
+                    }
                 });
 
                 ui.tree_node(hash!(), "Options", |ui| {
                     ui.checkbox(hash!(), "best route", &mut best_route);
-                    ui.checkbox(hash!(), "worst route", &mut worts_route);
+                    ui.checkbox(hash!(), "worst route", &mut worst_route);
                 });
 
                 ui.tree_node(hash!(), "Details", |ui| {
                     ui.label(None, &best_distance);
+                    ui.label(None, &worst_distance);
                 });
             });
 
@@ -106,24 +114,51 @@ async fn main() {
             let (x, y) = mouse_position();
 
             if x > MENU_WIDTH {
-                if test_cities.len() < 6 {
-                    test_cities.push(City::new(x, y, 5.));
+                match algorithm {
+                    Algorithms::BruteForce => {
+                        // TODO I don't like this inner logic, because it will repeat for each algorithm
+                        if cities.len() < BruteForce::CITY_LIMIT {
+                            cities.push(City::new(x, y, 5.));
 
-                    println!("{}", test_cities.len());
+                            tsp.get_routes::<BruteForce>(&cities);
 
-                    tsp.get_routes::<BruteForce>(&test_cities);
-                    best_distance = format!("Best distance: {}", tsp.best_route.path_length());
-                } else {
-                    println!("UNABLE TO ADD MORE, CHANGE ALGORITHM!");
+                            best_distance =
+                                format!("Best distance: {}", tsp.best_route.route_length());
+                            worst_distance =
+                                format!("Worst distance: {}", tsp.worst_route.route_length());
+                        } else {
+                            println!("UNABLE TO ADD MORE, CHANGE ALGORITHM!");
+                        }
+                    }
+                    Algorithms::NearestNeighbour => {
+                        unimplemented!()
+                    }
                 }
             }
         } else if is_mouse_button_pressed(MouseButton::Right) {
-            test_cities.pop();
-            tsp.get_routes::<BruteForce>(&test_cities);
-            best_distance = format!("Best distance: {}", tsp.best_route.path_length());
+            cities.pop();
+
+            tsp.get_routes::<BruteForce>(&cities);
+
+            best_distance = format!("Best distance: {}", tsp.best_route.route_length());
+            worst_distance = format!("Worst distance: {}", tsp.worst_route.route_length());
         }
 
-        tsp.best_route.render();
+        // tsp.best_route.render();
+
+        match (best_route, worst_route) {
+            (true, true) => {
+                tsp.best_route.render();
+                tsp.worst_route.render();
+            }
+            (true, false) => {
+                tsp.best_route.render();
+            }
+            (false, true) => {
+                tsp.worst_route.render();
+            }
+            (false, false) => {}
+        }
 
         next_frame().await
     }
