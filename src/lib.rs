@@ -19,8 +19,11 @@ pub mod algorithms {
         NearestNeighbour,
     }
 
-    pub mod brute_force;
-    pub mod nearest_neighbour;
+    pub use brute_force::BruteForce;
+    pub use nearest_neighbour::NearestNeighbour;
+
+    mod brute_force;
+    mod nearest_neighbour;
 }
 
 pub mod city;
