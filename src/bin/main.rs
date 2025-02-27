@@ -43,6 +43,8 @@ async fn main() {
 
     let mut best_distance = String::new(); // label
     let mut worst_distance = String::new(); // label
+    let mut num_of_cities = String::new();
+
     let mut best_route = true;
     let mut worst_route = false;
     let mut algorithm = Algorithms::BruteForce;
@@ -85,6 +87,7 @@ async fn main() {
                 });
 
                 ui.tree_node(hash!(), "Details", |ui| {
+                    ui.label(None, &num_of_cities);
                     ui.label(None, &best_distance);
                     ui.label(None, &worst_distance);
                 });
@@ -149,6 +152,7 @@ async fn main() {
 
         best_distance = format!("Best distance: {}", tsp.best_route.route_length());
         worst_distance = format!("Worst distance: {}", tsp.worst_route.route_length());
+        num_of_cities = format!("Current number of cities: {}", cities.len());
 
         match (best_route, worst_route) {
             (true, true) => {
