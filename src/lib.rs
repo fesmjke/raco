@@ -14,13 +14,16 @@ pub trait Solver<'a> {
 }
 
 pub mod algorithms {
-    pub use brute_force::BruteForce;
+    pub enum Algorithms {
+        BruteForce,
+        NearestNeighbour,
+    }
+
     pub mod brute_force;
-    // pub mod nearest_neighbour;
+    pub mod nearest_neighbour;
 }
 
 pub mod city;
-pub mod preset;
 pub mod route;
 pub mod tsp;
 pub mod utils;
