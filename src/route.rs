@@ -29,6 +29,15 @@ impl Route {
     }
 }
 
+impl Default for Route {
+    fn default() -> Self {
+        Self {
+            cities: vec![],
+            length: 0.,
+        }
+    }
+}
+
 impl Rendereable for Route {
     fn render(&self) {
         self.cities
