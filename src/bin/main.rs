@@ -6,7 +6,7 @@ use macroquad::{
     },
 };
 use raco::{
-    algorithms::{Algorithms, BruteForce},
+    algorithms::{Algorithms, BruteForce, NearestNeighbour},
     city::City,
     tsp::TSP,
     Rendereable,
@@ -35,7 +35,7 @@ async fn main() {
     let scale = scale_x.min(scale_y);
     let texture_x = draw_rect.x + (draw_rect.w - texture.width() * scale) / 2.0;
     let texture_y = draw_rect.y + (draw_rect.h - texture.height() * scale) / 2.0;
-
+    let dest_resize = Some(Vec2::new(texture.width() * scale, texture.height() * scale));
     request_new_screen_size(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     let mut check_box_algorithm = 0;
@@ -105,7 +105,7 @@ async fn main() {
             texture_y,
             WHITE,
             DrawTextureParams {
-                dest_size: Some(Vec2::new(texture.width() * scale, texture.height() * scale)),
+                dest_size: dest_resize,
                 ..Default::default()
             },
         );
@@ -119,32 +119,36 @@ async fn main() {
                         // TODO I don't like this inner logic, because it will repeat for each algorithm
                         if cities.len() < BruteForce::CITY_LIMIT {
                             cities.push(City::new(x, y, 5.));
-
                             tsp.get_routes::<BruteForce>(&cities);
-
-                            best_distance =
-                                format!("Best distance: {}", tsp.best_route.route_length());
-                            worst_distance =
-                                format!("Worst distance: {}", tsp.worst_route.route_length());
                         } else {
                             println!("UNABLE TO ADD MORE, CHANGE ALGORITHM!");
                         }
                     }
                     Algorithms::NearestNeighbour => {
-                        unimplemented!()
+                        if cities.len() < NearestNeighbour::CITY_LIMIT {
+                            cities.push(City::new(x, y, 5.));
+                            tsp.get_routes::<NearestNeighbour>(&cities);
+                        } else {
+                            println!("UNABLE TO ADD MORE, CHANGE ALGORITHM!");
+                        }
                     }
                 }
             }
         } else if is_mouse_button_pressed(MouseButton::Right) {
             cities.pop();
 
-            tsp.get_routes::<BruteForce>(&cities);
-
-            best_distance = format!("Best distance: {}", tsp.best_route.route_length());
-            worst_distance = format!("Worst distance: {}", tsp.worst_route.route_length());
+            match algorithm {
+                Algorithms::BruteForce => {
+                    tsp.get_routes::<BruteForce>(&cities);
+                }
+                Algorithms::NearestNeighbour => {
+                    tsp.get_routes::<NearestNeighbour>(&cities);
+                }
+            }
         }
 
-        // tsp.best_route.render();
+        best_distance = format!("Best distance: {}", tsp.best_route.route_length());
+        worst_distance = format!("Worst distance: {}", tsp.worst_route.route_length());
 
         match (best_route, worst_route) {
             (true, true) => {
