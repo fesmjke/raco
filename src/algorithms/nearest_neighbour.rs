@@ -1,61 +1,48 @@
-use crate::solution::Solution;
 use crate::city::City;
+use crate::route::Route;
+use crate::utils::best_route;
+use crate::Solver;
 
 pub struct NearestNeighbour;
 
 impl NearestNeighbour {
-    pub fn new() -> Self {
-        Self {
-
-        }
-    }
-
-    fn calculate_distance(&self, from: &City, to: &City) -> f32 {
-        from.position().distance_to(*to.position())
-    }
-
-    fn select_nearest(&self, from : &City, left: &Vec<City>) -> usize {
-        let mut distance = self.calculate_distance(from, &left[0]);
-        let mut lowest = 0 as usize;
-
-        for (index,city) in left.iter().enumerate() {
-            let temp = self.calculate_distance(from, city);
-
-            if temp < distance {    
-                distance = temp;
-                lowest = index;
-            }
-        }
-
-        lowest
-    }
+    pub const CITY_LIMIT: usize = 12;
 }
 
-impl Solution for NearestNeighbour {
-    fn solve(&self, cities : &Vec<City>) -> Vec<Vec<City>> {
-        let mut routes : Vec<Vec<City>> = vec![];
+fn select_nearest(current: &City, cities: &[City], visited: &[City]) -> City {
+    cities
+        .iter()
+        .filter(|city| !visited.contains(city))
+        .min_by(|city_a, city_b| {
+            current
+                .distance_between(city_a)
+                .partial_cmp(&current.distance_between(city_b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .unwrap_or(&current)
+        .clone()
+}
 
-        for (index,city) in cities.iter().enumerate() {
-            let mut temp = cities.clone();
-            let mut route : Vec<City> = vec![];
-            let mut lowest = 0 as usize;
-            let mut start = city.clone();
+impl<'a> Solver<'a> for NearestNeighbour {
+    fn solve(routes: &[Route]) -> Route {
+        best_route(routes)
+        // routes.first().unwrap_or(&Route::default()).clone()
+    }
 
-            route.push(temp[index].clone());
+    fn get_routes(cities: &[City]) -> Vec<Route> {
+        let mut routes = vec![];
 
-            temp.remove(index);
+        for current in cities.iter() {
+            let mut visited = vec![];
+            let mut new = *current;
 
-            while temp.len() > 0 {
-                lowest = self.select_nearest(&start, &temp);
-
-                route.push(temp[lowest].clone());
-
-                start = temp[lowest].clone();
-
-                temp.remove(lowest);
+            for _ in cities.iter() {
+                visited.push(new);
+                let next = select_nearest(&new, cities, &visited);
+                new = next;
             }
 
-            routes.push(route);
+            routes.push(Route::new(visited));
         }
 
         routes
@@ -67,31 +54,20 @@ mod solutions {
     use super::*;
 
     #[test]
-    fn nn() {
-        let city_a = City::new(0.0, 0.0);
-        let city_b = City::new(10.0, 0.0);
-        let city_c = City::new(5.0, 5.0);
-        let city_d = City::new(15.0, 8.0);
-        let city_e = City::new(8.0, 31.0);
+    fn best_route() {
+        let city_a = City::new(0.0, 0.0, 1.0);
+        let city_b = City::new(10.0, 0.0, 1.0);
+        let city_c = City::new(5.0, 5.0, 1.0);
+        let city_d = City::new(5.0, 9.0, 1.0);
+        let city_e = City::new(3.0, 1.0, 1.0);
+        let city_q = City::new(3.0, 15.0, 1.0);
 
-        let mut cities = vec![city_a, city_b, city_c];
+        let expected_best_route = Route::new(vec![city_e, city_a, city_c, city_d, city_q, city_b]);
+        let cities = vec![city_a, city_b, city_c, city_d, city_e, city_q];
 
-        let nn = NearestNeighbour::new();
+        let routes = NearestNeighbour::get_routes(&cities);
+        let best_route = NearestNeighbour::solve(&routes);
 
-        let mut answer = nn.solve(&cities);
-
-        assert_eq!(3, answer.len());
-
-        cities.push(city_d);
-
-        answer = nn.solve(&cities);
-
-        assert_eq!(4, answer.len());
-
-        cities.push(city_e);
-
-        answer = nn.solve(&cities);
-
-        assert_eq!(5, answer.len());
+        assert_eq!(expected_best_route, best_route);
     }
 }
